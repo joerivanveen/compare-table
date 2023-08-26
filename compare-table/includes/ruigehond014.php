@@ -35,19 +35,20 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             error_reporting(E_ALL);
             ini_set('display_errors', 1);
         }*/
+        $plugin_dir_url = plugin_dir_url(__FILE__);
         if (is_admin()) {
             $this->load_translations('compare-table');
             add_action('admin_init', array($this, 'settings'));
             add_action('admin_menu', array($this, 'menuitem'));
             // styles...
-            wp_enqueue_style('ruigehond014_admin_stylesheet', plugin_dir_url(__FILE__) . 'admin.css', [], RUIGEHOND014_VERSION);
+            wp_enqueue_style('ruigehond014_admin_stylesheet', "{$plugin_dir_url}admin.css", [], RUIGEHOND014_VERSION);
             wp_enqueue_style('wp-jquery-ui-dialog');
             // filters
             add_filter("plugin_action_links_$this->basename", array($this, 'settings_link')); // settings link on plugins page
         } else {
-            wp_enqueue_script('ruigehond014_javascript', plugin_dir_url(__FILE__) . 'client.js', array('jquery'), RUIGEHOND014_VERSION);
+            wp_enqueue_script('ruigehond014_javascript', "{$plugin_dir_url}client.js", array('jquery'), RUIGEHOND014_VERSION);
             if ($this->queue_frontend_css) { // only output css when necessary
-                wp_enqueue_style('ruigehond014_stylesheet_display', plugin_dir_url(__FILE__) . 'display.css', [], RUIGEHOND014_VERSION);
+                wp_enqueue_style('ruigehond014_stylesheet_display', "{$plugin_dir_url}display.css", [], RUIGEHOND014_VERSION);
             }
             //add_action('wp_head', array($this, 'outputSchema'));
             //add_shortcode('compare-table', array($this, 'getHtmlForFrontend'));
@@ -307,6 +308,11 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         echo '</div>';
     }
 
+    public function tables_page()
+    {
+        echo 'hallo tables page';
+    }
+
     public function settings_page()
     {
         // check user capabilities
@@ -412,14 +418,32 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
 
     public function menuitem()
     {
+        // add top level page
         add_menu_page(
             'Compare table',
             'Compare table',
+
             'edit_posts',
             'compare-table',
-            array($this, 'settings_page'),
+            array($this, 'tables_page'), // callback
             'dashicons-editor-table',
             20
+        );
+        add_submenu_page(
+            'compare-table',
+            __('Settings'), // page_title
+            __('Settings'), // menu_title
+            'manage_options',
+            'compare-table-settings',
+            array($this, 'settings_page')
+        );
+
+        global $submenu; // make the first entry go to the tables page
+        $submenu['compare-table'][0] = array(
+            __('Tables', 'compare-table'),
+            'edit_posts',
+            'compare-table', // the slug that identifies with the callback tables_page of the main menu item
+            'blub' // WHOA
         );
     }
 
