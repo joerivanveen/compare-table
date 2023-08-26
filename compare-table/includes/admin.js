@@ -42,6 +42,7 @@ function ruigehond014_setup() {
                     'table_name': target.getAttribute('data-table_name'),
                     'order': order,
                     'id': dropped_id,
+                    'nonce': Ruigehond014.nonce,
                 };
                 $.ajax({
                     url: ajaxurl,
@@ -311,6 +312,7 @@ Ruigehond014Ajax.prototype.call = function (data, callback) {
     data.action = 'ruigehond014_handle_input';
     data.post_id = this.post_id;
     data.timestamp = timestamp;
+    data.nonce = Ruigehond014_global.nonce;
     $input.attr({'data-timestamp': timestamp});
     if (data.disable === true) {
         $input.attr({'disabled': 'disabled'});

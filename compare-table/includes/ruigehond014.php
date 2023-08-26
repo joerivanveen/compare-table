@@ -137,7 +137,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
 
     public function handle_input(array $args): ruigehond_0_4_0\returnObject
     {
-        if (false === current_user_can('edit_posts')) {
+        check_ajax_referer('ruigehond014_nonce', 'nonce');
+        if (false === current_user_can('edit_posts') || !is_admin()) {
             return $this->getReturnObject(__('You do not have sufficient permissions to access this page.', 'compare-table'));
         }
         $short_table_name = stripslashes($args['table_name']);
@@ -152,7 +153,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         }
         $table_name = "{$this->table_prefix}$short_table_name";
         if (isset($args['id'])) {
-            $id = (int)$args['id']; // this must be the same as $this->row->id
+            $id = (int)$args['id'];
         } else {
             $id = 0;
         }
@@ -175,25 +176,25 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                 break;
             case 'delete_permanently':
                 if (is_admin()) {
-                    // todo check if it maybe cannot be deleted
+                    // check if it maybe cannot be deleted
                     switch ($short_table_name) {
                         case 'type':
                             if (
                                 $this->wpdb->get_var("SELECT EXISTS (SELECT 1 FROM {$this->table_prefix}subject WHERE type_id = $id);")
                                 || $this->wpdb->get_var("SELECT EXISTS (SELECT 1 FROM {$this->table_prefix}field WHERE type_id = $id);")
                             ) {
-                                $returnObject->add_message(__('Cannot delete', 'compare-table'), 'warn');
+                                $returnObject->add_message(__('Cannot delete this', 'compare-table'), 'warn');
                                 return $returnObject;
                             }
                             break;
                         case 'subject':
                         case 'field':
                             if ($this->wpdb->get_var("SELECT EXISTS (SELECT 1 FROM {$this->table_prefix}compare WHERE {$short_table_name}_id = $id);")) {
-                                $returnObject->add_message(__('Cannot delete', 'compare-table'), 'warn');
+                                $returnObject->add_message(__('Cannot delete this', 'compare-table'), 'warn');
                                 return $returnObject;
                             }
                             break;
-                            // case compare can always be deleted
+                        // case compare can always be deleted
                     }
                     $deletedRows = $this->wpdb->delete($table_name, array('id' => $id));
                     if (false === $deletedRows) {
@@ -205,77 +206,63 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                 }
                 break;
             case 'update':
-                if (is_admin()) {
-                    $value = trim(stripslashes($args['value'])); // don't know how it gets magically escaped, but not relying on it
-                    $column_name = stripslashes($args['column_name']);
-                    $where = array('id' => $id);
+                $value = trim(stripslashes($args['value'])); // don't know how it gets magically escaped, but not relying on it
+                $column_name = stripslashes($args['column_name']);
+                $where = array('id' => $id);
+                // validate present id's for table when insert is requested
+                if (0 === $id) {
                     switch ($short_table_name) {
                         case 'subject':
                         case 'field':
-                            if (false === isset($args['type_id']) || 0 === $args['type_id']) {
+                            if (false === isset($args['type_id']) || 0 === (int)$args['type_id']) {
                                 $returnObject->add_message(sprintf(__('Missing id %s', 'compare-table'), 'type_id'), 'error');
                                 return $returnObject;
                             }
                             $where['type_id'] = (int)$args['type_id'];
                             break;
                         case 'compare':
+                            if (false === isset($args['subject_id'], $args['field_id'])) {
+                                $returnObject->add_message(sprintf(__('Missing id %s', 'compare-table'), 'subject_id, field_id'), 'error');
+                                return $returnObject;
+                            }
                             $returnObject->add_message(sprintf(__('Compare not working yet %s', 'compare-table'), 'TODO'), 'error');
                             return $returnObject;
                             break;
                     }
-                    // validate present id's for table when insert is requested
-                    if (0 === $id) {
-                        switch ($short_table_name) {
-                            case 'subject':
-                            case 'field':
-                                if (false === isset($where['type_id']) || 0 === $where['type_id']) {
-                                    $returnObject->add_message(sprintf(__('Missing id %s', 'compare-table'), 'type_id'), 'error');
-                                    return $returnObject;
-                                }
-                                break;
-                            case 'compare':
-                                if (false === isset($where['subject_id'], $where['field_id'])) {
-                                    $returnObject->add_message(sprintf(__('Missing id %s', 'compare-table'), 'subject_id, field_id'), 'error');
-                                    return $returnObject;
-                                }
-                                break;
-                        }
+                }
+                // do the upsert
+                $upsertedRows = 0;
+                switch ($column_name) {
+                    case 'title':
+                    case 'description':
+                        $upsertedRows = $this->upsertDb($table_name, array($column_name => $value), $where);
+                        break;
+                    default:
+                        $returnObject->add_message(sprintf(__('No such column %s', 'compare-table'),
+                            var_export($column_name, true)), 'error');
+                }
+                // report the upsert
+                if (0 === $upsertedRows) {
+                    $returnObject->add_message(__('Not updated', 'compare-table'), 'warn');
+                } else {
+                    $returnObject->set_success(true);
+                    if (0 < $upsertedRows) { // this was an insert
+                        $id = $upsertedRows;
+                        $args['id'] = $id;
+                        // also set the order so it appears at the bottom
+                        $this->upsertDb($table_name, array('o' => $id), array('id' => $id));
+                        // return the entire row as html
+                        $row = $this->wpdb->get_row("SELECT * FROM $table_name WHERE id = $id;", OBJECT);
+                        $args['html'] = $this->get_row_html($row, $short_table_name, $this->admin_url);
                     }
-                    // do the upsert
-                    $upsertedRows = 0;
-                    switch ($column_name) {
-                        case 'title':
-                        case 'description':
-                            $upsertedRows = $this->upsertDb($table_name, array($column_name => $value), $where);
-                            break;
-                        default:
-                            $returnObject->add_message(sprintf(__('No such column %s', 'compare-table'),
-                                var_export($column_name, true)), 'error');
-                    }
-                    // report the upsert
-                    if (0 === $upsertedRows) {
-                        $returnObject->add_message(__('Not updated', 'compare-table'), 'warn');
-                    } else {
-                        $returnObject->set_success(true);
-                        if (0 < $upsertedRows) { // this was an insert
-                            $id = $upsertedRows;
-                            $args['id'] = $id;
-                            // also set the order so it appears at the bottom
-                            $this->upsertDb($table_name, array('o' => $id), array('id' => $id));
-                            // return the entire row as html
-                            $row = $this->wpdb->get_row("SELECT * FROM $table_name WHERE id = $id;", OBJECT);
-                            $args['html'] = $this->get_row_html($row, $short_table_name);
-                        }
-                        $args['value'] = $this->wpdb->get_var("SELECT $column_name FROM $table_name WHERE id = $id;");
-                        $returnObject->set_data($args);
-                    }
+                    $args['value'] = $this->wpdb->get_var("SELECT $column_name FROM $table_name WHERE id = $id;");
+                    $returnObject->set_data($args);
                 }
                 break;
             default:
                 return $this->getReturnObject(sprintf(__('Did not understand handle %s', 'compare-table'),
                     var_export($args['handle'], true)));
         }
-
         return $returnObject;
     }
 
@@ -286,6 +273,10 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             'jquery-ui-sortable',
             'jquery'
         ), RUIGEHOND014_VERSION);
+        $ajax_nonce = wp_create_nonce('ruigehond014_nonce');
+        wp_localize_script('ruigehond014_admin_javascript', 'Ruigehond014_global', array(
+            'nonce' => $ajax_nonce,
+        ));
         echo '<div class="wrap ruigehond014"><h1>';
         echo esc_html(get_admin_page_title());
         echo '</h1>';
@@ -297,17 +288,33 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         $this->tables_page_section('field');
         // end
         echo '</div>';
-        // if a subject is selected, show the table that connects the fields + info box to that subject
+        // todo if a subject is selected, show the table that connects the fields + info box to that subject
     }
 
     private function tables_page_section(string $table_short_name)
     {
         $where = '';
         $type_id = (int)($_GET['type_id'] ?? 0);
+        if (0 === $type_id) {
+            if (isset($_GET['subject_id'])) {
+                $subject_id = (int)$_GET['subject_id'];
+                $type_id = $this->wpdb->get_var("SELECT type_id FROM $this->table_subject WHERE id = $subject_id;");
+            } elseif (isset($_GET['field_id'])) {
+                $field_id = (int)$_GET['field_id'];
+                $type_id = $this->wpdb->get_var("SELECT type_id FROM $this->table_field WHERE id = $field_id;");
+            }
+        }
         switch ($table_short_name) {
             case 'subject':
             case 'field':
-                if (0 < $type_id) $where = "WHERE type_id = $type_id";
+                if (0 < $type_id) {
+                    $where = "WHERE type_id = $type_id";
+                } else {
+                    echo '<section class="ruigehond014_rows"><p>';
+                    echo __('Choose a type first.', 'compare-table');
+                    echo '</p></section><hr/>';
+                    return;
+                }
                 break;
             case 'compare':
                 //todo
@@ -315,7 +322,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         $rows = $this->wpdb->get_results("SELECT * FROM $this->table_prefix$table_short_name $where ORDER BY o ASC;", OBJECT);
         echo '<section class="rows-sortable ruigehond014_rows" data-table_name="', $table_short_name, '">';
         foreach ($rows as $index => $row) {
-            echo $this->get_row_html($row, $table_short_name);
+            echo $this->get_row_html($row, $table_short_name, $this->admin_url);
         }
         // new row
         echo '<div class="ruigehond014-order-row" data-id="0">';
@@ -324,7 +331,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         echo '</section><hr/>';
     }
 
-    private function get_row_html($row, string $table_short_name)
+    private function get_row_html($row, string $table_short_name, string $current_url): string
     {
         $html_title = htmlentities($row->title);
         $id = (int)$row->id;
@@ -361,7 +368,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             echo '</textarea>';
         }
         echo '<div class="ruigehond014-edit"><a href="';
-        echo $this->add_query_to_url($this->admin_url, "{$table_short_name}_id", urlencode((string)$id));
+        echo $this->add_query_to_url($current_url, "{$table_short_name}_id", urlencode((string)$id));
         echo '">EDIT</a></div>';
         echo '<div class="ruigehond014-delete"><input type="button" data-handle="delete_permanently" data-table_name="';
         echo $table_short_name;
