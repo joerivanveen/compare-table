@@ -61,7 +61,7 @@
     background-color: rgba(130, 210, 120, 1);
 }
 
-.ruigehond.notice.warning {
+.ruigehond.notice.warn {
     background-color: rgba(255, 200, 0, 1);
     color: #fff;
 }

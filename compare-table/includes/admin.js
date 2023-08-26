@@ -169,19 +169,22 @@ Ruigehond014_input.prototype.delete = function () { // this can actually delete 
     const data = this.getData(),
         self = this;
     this.ajax.call(data, function (json) {
-        if (data.handle === 'clear_offer') {
+        const data = json.data, data_handle = data.handle;
+        if ('clear_offer' === data_handle) {
             // clear all the values...
             document.querySelectorAll('input[data-handle="update_offer"]').forEach(function (el) {
                 el.value = '';
             });
-        } else if (data.handle === 'undelete') {
-            self.$input.parents('.' + data.table_name + '_row').removeClass('marked-for-deletion');
-        } else if (data.handle === 'delete_permanently') {
-            self.$input.parents('.' + data.table_name + '_row').remove();
-        } else if (data.handle === 'delete_array_option') {
+        } else if ('undelete' === data_handle) {
+            self.$input.parents('.' + data.table_name + '-row').removeClass('marked-for-deletion');
+        } else if ('delete_permanently' === data_handle) {
+            self.$input.parents('.' + data.table_name + '-row').fadeOut(432, function() {
+                this.remove();
+            });
+        } else if ('delete_array_option' === data_handle) {
             self.$input.parents('.row').remove();
         } else {
-            self.$input.parents('.' + data.table_name + '_row').addClass('marked-for-deletion'); // <- indicate it's deleting at the moment
+            self.$input.parents('.' + data.table_name + '-row').addClass('marked-for-deletion'); // <- indicate it's deleting at the moment
         }
     });
 };

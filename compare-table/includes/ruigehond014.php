@@ -173,15 +173,55 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                     $returnObject->set_data($args);
                 }
                 break;
+            case 'delete_permanently':
+                if (is_admin()) {
+                    // todo check if it maybe cannot be deleted
+                    switch ($short_table_name) {
+                        case 'type':
+                            if (
+                                $this->wpdb->get_var("SELECT EXISTS (SELECT 1 FROM {$this->table_prefix}subject WHERE type_id = $id);")
+                                || $this->wpdb->get_var("SELECT EXISTS (SELECT 1 FROM {$this->table_prefix}field WHERE type_id = $id);")
+                            ) {
+                                $returnObject->add_message(__('Cannot delete', 'compare-table'), 'warn');
+                                return $returnObject;
+                            }
+                            break;
+                        case 'subject':
+                        case 'field':
+                            if ($this->wpdb->get_var("SELECT EXISTS (SELECT 1 FROM {$this->table_prefix}compare WHERE {$short_table_name}_id = $id);")) {
+                                $returnObject->add_message(__('Cannot delete', 'compare-table'), 'warn');
+                                return $returnObject;
+                            }
+                            break;
+                            // case compare can always be deleted
+                    }
+                    $deletedRows = $this->wpdb->delete($table_name, array('id' => $id));
+                    if (false === $deletedRows) {
+                        $returnObject->add_message(__('Not deleted', 'compare-table'), 'warn');
+                    } else {
+                        $returnObject->set_success(true);
+                        $returnObject->set_data($args);
+                    }
+                }
+                break;
             case 'update':
                 if (is_admin()) {
                     $value = trim(stripslashes($args['value'])); // don't know how it gets magically escaped, but not relying on it
                     $column_name = stripslashes($args['column_name']);
                     $where = array('id' => $id);
-                    foreach (array('type_id', 'subject_id', 'field_id') as $id_column_name) {
-                        if (isset($args[$id_column_name])) {
-                            $where[$id_column_name] = (int)$args[$id_column_name];
-                        }
+                    switch ($short_table_name) {
+                        case 'subject':
+                        case 'field':
+                            if (false === isset($args['type_id']) || 0 === $args['type_id']) {
+                                $returnObject->add_message(sprintf(__('Missing id %s', 'compare-table'), 'type_id'), 'error');
+                                return $returnObject;
+                            }
+                            $where['type_id'] = (int)$args['type_id'];
+                            break;
+                        case 'compare':
+                            $returnObject->add_message(sprintf(__('Compare not working yet %s', 'compare-table'), 'TODO'), 'error');
+                            return $returnObject;
+                            break;
                     }
                     // validate present id's for table when insert is requested
                     if (0 === $id) {
@@ -286,32 +326,48 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
 
     private function get_row_html($row, string $table_short_name)
     {
+        $html_title = htmlentities($row->title);
+        $id = (int)$row->id;
         ob_start();
-        echo '<div class="ruigehond014-order-row" data-id="';
-        echo $row->id;
-        echo '" data-inferred_order="';
-        echo $row->o;
+        echo '<div class="ruigehond014-order-row ', $table_short_name, '-row" data-id="';
+        echo $id;
+        //echo '" data-inferred_order="';
+        //echo $row->o;
         echo '">';
         echo '<div class="sortable-handle">sort handle</div>';
         echo '<textarea data-id="';
-        echo $row->id;
-        echo '" data-handle="update" data-table_name="', $table_short_name, '" data-column_name="title" data-value="';
-        echo htmlentities($row->title);
+        echo $id;
+        echo '" data-handle="update" data-table_name="';
+        echo $table_short_name;
+        echo '" data-column_name="title" data-value="';
+        echo $html_title;
         echo '"	class="ruigehond014 input title ajaxupdate tabbed"/>';
-        echo htmlentities($row->title);
+        echo $html_title;
         echo '</textarea>';
         if (property_exists($row, 'description')) {
+            if (isset($row->description)) {
+                $html_description = htmlentities($row->description);
+            } else {
+                $html_description = '';
+            }
             echo '<textarea data-id="';
-            echo $row->id;
-            echo '" data-handle="update" data-table_name="', $table_short_name, '" data-column_name="description" data-value="';
-            if (isset($row->description)) echo htmlentities($row->description);
+            echo $id;
+            echo '" data-handle="update" data-table_name="';
+            echo $table_short_name;
+            echo '" data-column_name="description" data-value="';
+            echo $html_description;
             echo '"	class="ruigehond014 input description ajaxupdate tabbed">';
-            if (isset($row->description)) echo htmlentities($row->description);
+            echo $html_description;
             echo '</textarea>';
         }
         echo '<div class="ruigehond014-edit"><a href="';
-        echo $this->add_query_to_url($this->admin_url, "{$table_short_name}_id", urlencode($row->id));
+        echo $this->add_query_to_url($this->admin_url, "{$table_short_name}_id", urlencode((string)$id));
         echo '">EDIT</a></div>';
+        echo '<div class="ruigehond014-delete"><input type="button" data-handle="delete_permanently" data-table_name="';
+        echo $table_short_name;
+        echo '" data-id="';
+        echo $id;
+        echo '" class="delete ruigehond014 ajaxupdate" value="DELETE"/></div>';
         echo '</div>';
         return ob_get_clean();
     }
@@ -323,7 +379,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             $pos = strpos($current_url, "$key=");
             $current_url = substr($current_url, 0, $pos);
         }
-        return "$current_url&$key=$value";
+        return "$current_url&$key=$value"; // url qs always starts with ?page=compare-table
     }
 
     public function settings_page()
@@ -355,7 +411,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         add_settings_section(
             'global_settings', // section id
             __('Options', 'compare-table'), // title
-            function () {
+            static function () {
             }, //callback
             'ruigehond014' // page id
         );
