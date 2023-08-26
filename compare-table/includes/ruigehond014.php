@@ -9,7 +9,7 @@ use ruigehond_0_4_0;
 class ruigehond014 extends ruigehond_0_4_0\ruigehond
 {
     // variables that hold cached items
-    private $database_version, $basename, $queue_frontend_css, $remove_on_uninstall;
+    private $database_version, $basename, $admin_url, $queue_frontend_css, $remove_on_uninstall;
     private $table_prefix, $table_type, $table_subject, $table_field, $table_compare;
 
     public function __construct($basename)
@@ -27,6 +27,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         $this->database_version = $this->getOption('database_version', '0.0.0');
         $this->queue_frontend_css = $this->getOption('queue_frontend_css', true);
         $this->remove_on_uninstall = $this->getOption('remove_on_uninstall', false);
+        // standard page url
+        $this->admin_url = admin_url('admin.php?page=compare-table');
     }
 
     public function initialize()
@@ -57,9 +59,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
 
     public function settings_link($links)
     {
-        $admin_url = get_admin_url();
         $link_text = __('Tables', 'compare-table');
-        $link = "<a href=\"{$admin_url}admin.php?page=compare-table\">$link_text</a>";
+        $link = "<a href=\"{$this->admin_url}\">$link_text</a>";
         array_unshift($links, $link);
 
         return $links;
@@ -222,7 +223,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                             // also set the order so it appears at the bottom
                             $this->upsertDb($table_name, array('o' => $id), array('id' => $id));
                             // return the entire row as html
-                            $args['html'] = '<p>HAHAHAHAHAHA</p>';
+                            $row = $this->wpdb->get_row("SELECT * FROM $table_name WHERE id = $id;", OBJECT);
+                            $args['html'] = $this->get_row_html($row, $short_table_name);
                         }
                         $args['value'] = $this->wpdb->get_var("SELECT $column_name FROM $table_name WHERE id = $id;");
                         $returnObject->set_data($args);
@@ -247,19 +249,18 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         echo '<div class="wrap ruigehond014"><h1>';
         echo esc_html(get_admin_page_title());
         echo '</h1>';
-        $current_url = admin_url('admin.php?page=compare-table');
         // get the type(s), provide sortable rows and a button / input to add a new type
-        $this->tables_page_section('type', $current_url);
+        $this->tables_page_section('type');
         // get the subjects for the current type, provide sortable rows and a button to add a new subject
-        $this->tables_page_section('subject', $current_url);
+        $this->tables_page_section('subject');
         // get the fields for the current type, provide sortable rows and a button to add a new field
-        $this->tables_page_section('field', $current_url);
+        $this->tables_page_section('field');
         // end
         echo '</div>';
         // if a subject is selected, show the table that connects the fields + info box to that subject
     }
 
-    private function tables_page_section(string $table_short_name, string $current_url)
+    private function tables_page_section(string $table_short_name)
     {
         $where = '';
         $type_id = (int)($_GET['type_id'] ?? 0);
@@ -274,38 +275,45 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         $rows = $this->wpdb->get_results("SELECT * FROM $this->table_prefix$table_short_name $where ORDER BY o ASC;", OBJECT);
         echo '<section class="rows-sortable ruigehond014_rows" data-table_name="', $table_short_name, '">';
         foreach ($rows as $index => $row) {
-            echo '<div class="ruigehond014-order-row" data-id="';
-            echo $row->id;
-            echo '" data-inferred_order="';
-            echo $row->o;
-            echo '">';
-            echo '<div class="sortable-handle">sort handle</div>';
-            echo '<textarea data-id="';
-            echo $row->id;
-            echo '" data-handle="update" data-table_name="', $table_short_name, '" data-column_name="title" data-value="';
-            echo htmlentities($row->title);
-            echo '"	class="ruigehond014 input title ajaxupdate tabbed"/>';
-            echo htmlentities($row->title);
-            echo '</textarea>';
-            if (property_exists($row, 'description')) {
-                echo '<textarea data-id="';
-                echo $row->id;
-                echo '" data-handle="update" data-table_name="', $table_short_name, '" data-column_name="description" data-value="';
-                if (isset($row->description)) echo htmlentities($row->description);
-                echo '"	class="ruigehond014 input description ajaxupdate tabbed">';
-                if (isset($row->description)) echo htmlentities($row->description);
-                echo '</textarea>';
-            }
-            echo '<div class="ruigehond014-edit"><a href="';
-            echo $this->add_query_to_url($current_url, "{$table_short_name}_id", urlencode($row->id));
-            echo '">EDIT</a></div>';
-            echo '</div>';
+            echo $this->get_row_html($row, $table_short_name);
         }
         // new row
         echo '<div class="ruigehond014-order-row" data-id="0">';
-        echo '<textarea data-handle="update" data-table_name="', $table_short_name, '" data-type_id="',$type_id,'" data-column_name="title" class="ruigehond014 input title ajaxupdate tabbed"></textarea>';
+        echo '<textarea data-handle="update" data-table_name="', $table_short_name, '" data-type_id="', $type_id, '" data-column_name="title" class="ruigehond014 input title ajaxupdate tabbed"></textarea>';
         echo '</div>';
         echo '</section><hr/>';
+    }
+
+    private function get_row_html($row, string $table_short_name)
+    {
+        ob_start();
+        echo '<div class="ruigehond014-order-row" data-id="';
+        echo $row->id;
+        echo '" data-inferred_order="';
+        echo $row->o;
+        echo '">';
+        echo '<div class="sortable-handle">sort handle</div>';
+        echo '<textarea data-id="';
+        echo $row->id;
+        echo '" data-handle="update" data-table_name="', $table_short_name, '" data-column_name="title" data-value="';
+        echo htmlentities($row->title);
+        echo '"	class="ruigehond014 input title ajaxupdate tabbed"/>';
+        echo htmlentities($row->title);
+        echo '</textarea>';
+        if (property_exists($row, 'description')) {
+            echo '<textarea data-id="';
+            echo $row->id;
+            echo '" data-handle="update" data-table_name="', $table_short_name, '" data-column_name="description" data-value="';
+            if (isset($row->description)) echo htmlentities($row->description);
+            echo '"	class="ruigehond014 input description ajaxupdate tabbed">';
+            if (isset($row->description)) echo htmlentities($row->description);
+            echo '</textarea>';
+        }
+        echo '<div class="ruigehond014-edit"><a href="';
+        echo $this->add_query_to_url($this->admin_url, "{$table_short_name}_id", urlencode($row->id));
+        echo '">EDIT</a></div>';
+        echo '</div>';
+        return ob_get_clean();
     }
 
     private function add_query_to_url(string $current_url, string $key, string $value): string
