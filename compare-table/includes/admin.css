@@ -1,0 +1,70 @@
+.ruigehond014-order-term {
+    font-size: 125%;
+    padding: .2em .5em;
+}
+.ruigehond014-order-term .sortable-handle {
+    cursor: grab;
+    display: inline-block;
+}
+.ruigehond014-order-term input {
+    width: 242px;
+    margin-right: 4px;
+}
+.ruigehond014 .unsaved {
+    background-color: rgba(255, 0, 0, .2);
+}
+
+.ruigehond.modal.dialog,
+#RuigehondModal {
+    position: fixed;
+    width: 40vw;
+    left: 30vw;
+    top: 200px;
+    padding: 2vw;
+    border-radius: 2vw;
+    border: ridge 3px #eee;
+    background-color: #fff;
+    z-index: 100000; /* 1 above wp admin bar */
+}
+
+.ruigehond.modal.wrapper {
+    position: fixed;
+    background-color: rgba(0, 0, 0, .4);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000; /* 1 above wp admin bar */
+}
+
+.ruigehond.notices {
+    position: fixed;
+    top: 0;
+    width: 80vw;
+    left: 10vw;
+    z-index: 100000; /* 1 above wp admin bar */
+}
+
+.ruigehond.notice {
+    padding: 1em;
+    border-bottom-left-radius: 1em;
+    border-bottom-right-radius: 1em;
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+    display: block;
+}
+
+.ruigehond.notice.log {
+    background-color: rgba(130, 210, 120, 1);
+}
+
+.ruigehond.notice.warning {
+    background-color: rgba(255, 200, 0, 1);
+    color: #fff;
+}
+
+.ruigehond.notice.error {
+    background-color: rgba(200, 0, 0, 1);
+    color: #fff;
+}
+

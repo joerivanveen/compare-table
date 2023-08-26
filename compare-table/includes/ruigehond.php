@@ -280,6 +280,8 @@ namespace ruigehond_0_4_0 {
                 $key = addslashes($key);
                 if (true === is_string($value)) $value = addslashes($value);
                 $where_condition = "$where_condition AND $key = '$value'";
+                // remove current id from values, so it will not be part of an insert statement later
+                if ('id' === $key || "{$table_name}_id" === $key) unset($values[$key]);
             }
 
             if ($this->wpdb->get_var("SELECT EXISTS (SELECT 1 FROM $table_name $where_condition);")) {

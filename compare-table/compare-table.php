@@ -43,7 +43,7 @@ function ruigehond014_handle_input()
     global $ruigehond014;
     $post_data = (object)filter_input_array(INPUT_POST); // assume form data
 
-    $return_object = $ruigehond014->handle_input($post_data);
+    $return_object = $ruigehond014->handle_input((array)$post_data);
 
     echo json_encode($return_object);
     die(); // prevent any other output

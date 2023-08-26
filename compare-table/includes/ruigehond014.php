@@ -31,18 +31,18 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
 
     public function initialize()
     {
-        /*if (current_user_can('administrator')) {
+        if (current_user_can('administrator')) {
             error_reporting(E_ALL);
             ini_set('display_errors', 1);
-        }*/
+        }
         $plugin_dir_url = plugin_dir_url(__FILE__);
         if (is_admin()) {
             $this->load_translations('compare-table');
             add_action('admin_init', array($this, 'settings'));
-            add_action('admin_menu', array($this, 'menuitem'));
+            add_action('admin_menu', array($this, 'menu_item'));
             // styles...
             wp_enqueue_style('ruigehond014_admin_stylesheet', "{$plugin_dir_url}admin.css", [], RUIGEHOND014_VERSION);
-            wp_enqueue_style('wp-jquery-ui-dialog');
+            //wp_enqueue_style('wp-jquery-ui-dialog');
             // filters
             add_filter("plugin_action_links_$this->basename", array($this, 'settings_link')); // settings link on plugins page
         } else {
@@ -58,8 +58,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
     public function settings_link($links)
     {
         $admin_url = get_admin_url();
-        $link_text = __('Settings');
-        $link = "<a href=\"{$admin_url}options-general.php?page=compare-table\">$link_text</a>";
+        $link_text = __('Tables', 'compare-table');
+        $link = "<a href=\"{$admin_url}admin.php?page=compare-table\">$link_text</a>";
         array_unshift($links, $link);
 
         return $links;
@@ -73,33 +73,6 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         ob_start();
         echo ' TEST compare table ';
         return ob_get_clean();
-    }
-
-    private function getTerms()
-    {
-        if (isset($this->terms)) return $this->terms; // return cached value if available
-        // get the terms for this registered taxonomies from the db
-        $taxonomies = addslashes(sanitize_text_field($this->taxonomies)); // just for the h#ck of it
-        $wp_prefix = $this->wpdb->prefix;
-        $sql = "select t.term_id, tt.parent, t.name as term, o.t, o.post_id from
-                {$wp_prefix}terms t inner join
-                {$wp_prefix}term_taxonomy tt on t.term_id = tt.term_id left outer join
-                {$this->table_type} o on o.term_id = t.term_id where tt.taxonomy = '$taxonomies'
-                order by o.o, t.name;";
-        $rows = $this->wpdb->get_results($sql, OBJECT);
-        $terms = array();
-        foreach ($rows as $key => $row) {
-            if (!isset($terms[$parent = intval($row->parent)])) $terms[$parent] = array();
-            $terms[$parent][] = array(
-                'term_id' => intval($row->term_id),
-                'term' => $row->term,
-                't' => $row->t,
-                'post_id' => $row->post_id,
-            );
-        }
-        $this->terms = $terms;
-
-        return $terms;
     }
 
     /**
@@ -161,28 +134,37 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         return $return_arr;
     }
 
-    public function handle_input($args)
+    public function handle_input(array $args): ruigehond_0_4_0\returnObject
     {
-        $returnObject = $this->getReturnObject();
-        $wp_prefix = $this->wpdb->prefix;
+        if (false === current_user_can('edit_posts')) {
+            return $this->getReturnObject(__('You do not have sufficient permissions to access this page.', 'compare-table'));
+        }
+        $table_name = stripslashes($args['table_name']);
+        if (false === in_array($table_name, array(
+                $this->table_type,
+                $this->table_subject,
+                $this->table_field,
+                $this->table_compare
+            ))) {
+            return $this->getReturnObject(sprintf(__('No such table %s', 'compare-table'),
+                var_export($args['table_name'], true)));
+        }
         if (isset($args['id'])) {
             $id = (int)$args['id']; // this must be the same as $this->row->id
         } else {
             $id = 0;
         }
-        $value = trim(stripslashes($args['value'])); // don't know how it gets magically escaped, but not relying on it
         $handle = trim(stripslashes($args['handle']));
-        // cleanup the array, can this be done more elegantly?
-        $args['id'] = $id;
-        $args['value'] = $value;
+        $returnObject = $this->getReturnObject();
+
         switch ($handle) {
-            case 'order_taxonomy':
+            case 'order_rows':
                 if (isset($args['order']) and is_array($args['order'])) {
                     $rows = $args['order'];
-                    foreach ($rows as $term_id => $o) {
-                        $this->upsertDb($this->table_type,
+                    foreach ($rows as $id => $o) {
+                        $this->upsertDb($table_name,
                             array('o' => $o),
-                            array('term_id' => $term_id)
+                            array('id' => $id)
                         );
                     }
                     $returnObject->set_success(true);
@@ -191,79 +173,48 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                 break;
             case 'update':
                 if (is_admin()) {
-                    $table_name = stripslashes($args['table_name']);
+                    $value = trim(stripslashes($args['value'])); // don't know how it gets magically escaped, but not relying on it
                     $column_name = stripslashes($args['column_name']);
-                    $id_column = (isset($args['id_column'])) ? $args['id_column'] : "{$table_name}_id";
+                    $where = array('id' => $id);
+                    foreach (array('type_id', 'subject_id', 'field_id') as $id_column_name) {
+                        if (isset($args[$id_column_name])) {
+                            $where[$id_column_name] = (int)$args[$id_column_name];
+                        }
+                    }
+                    $upsertedRows = 0;
                     switch ($column_name) {
-                        case 't': // you need to save the title and the id as well
-                            if (strrpos($value, ')') === strlen($value) - 1) {
-                                $post_id = (int)str_replace(')', '', substr($value, strrpos($value, '(') + 1));
-                                //$post_title = trim( substr( $value, 0, strrpos( $value, '(' ) ) );
-                                if ($post_title = $this->wpdb->get_var("SELECT post_title FROM {$wp_prefix}posts WHERE ID = {$post_id};")) {
-                                    $args['value'] = "$post_title ($post_id)";
-                                    $update = array('t' => $args['value'], 'post_id' => $post_id);
-                                } else {
-                                    $update = array();
-                                    $returnObject->add_message(sprintf(__('post_id %d not found', 'faq-with-categories'), $post_id), 'warn');
-                                }
-                            } else {
-                                $post_title = $value;
-                                if ('' === $value) {
-                                    $update = array('t' => '', 'post_id' => null);
-                                } elseif ($post_id = $this->wpdb->get_var("SELECT ID 
-										FROM {$wp_prefix}posts WHERE post_title = '" . addslashes($post_title) . "';")) {
-                                    $args['value'] = "$post_title ($post_id)";
-                                    $update = array('t' => $args['value'], 'post_id' => $post_id);
-                                } else {
-                                    $update = array('t' => $args['value'], 'post_id' => 0);
-                                    $args['nonexistent'] = true;
-                                    $returnObject->add_message(sprintf(__('Could not find post_id based on title: %s', 'faq-with-categories'), $post_title), 'warn');
-                                }
-                            }
+                        case 'title':
+                        case 'description':
+                            $upsertedRows = $this->upsertDb($table_name, array('title' => $value), $where);
+                            break;
+                        default:
+                            $returnObject->add_message(sprintf(__('No such column %s', 'compare-table'),
+                                var_export($column_name, true)), 'error');
                     }
-                    if (count($update) > 0) {
-                        $rowsaffected = $this->upsertDb(
-                            $this->table_prefix . $table_name, $update,
-                            array($id_column => $id));
-                        if ($rowsaffected === 0) {
-                            $returnObject->add_message(__('Update with same value not necessary...', 'faq-with-categories'), 'warn');
+
+                    if (0 === $upsertedRows) {
+                        $returnObject->add_message(__('Not updated', 'compare-table'), 'warn');
+                    } else {
+                        $returnObject->set_success(true);
+                        if (0 < $upsertedRows) {
+                            $id = $upsertedRows;
+                            $args['id'] = $id;
                         }
-                        if ($rowsaffected === false) {
-                            $returnObject->add_message(__('Operation failed', 'faq-with-categories'), 'error');
-                        } else {
-                            $returnObject->set_success(true);
-                            $args['value'] = $this->wpdb->get_var(
-                                "SELECT $column_name FROM {$this->table_prefix}$table_name WHERE $id_column = $id;");
-                            if ($column_name === 'rating_criteria') {
-                                $args['value'] = implode(PHP_EOL, json_decode($args['value']));
-                            }
-                            $returnObject->set_data($args);
-                        }
+                        $args['value'] = $this->wpdb->get_var(
+                            "SELECT $column_name FROM $table_name WHERE 'id' = $id;");
+                        $returnObject->set_data($args);
                     }
                 }
-                break;
-            case 'suggest_t':
-                // return all valid post titles that can be used for this tag
-                $rows = $this->wpdb->get_results(
-                    "SELECT CONCAT(post_title, ' (', ID, ')') AS t 
-						FROM {$wp_prefix}posts 
-						WHERE post_status = 'publish' AND NOT post_type = 'nav_menu_item'
-						ORDER BY post_title ASC;");
-                if (count($rows) > 0) {
-                    $returnObject->set_success(true);
-                }
-                $returnObject->suggestions = $rows;
-                $returnObject->set_data($args);
                 break;
             default:
-                return $this->getReturnObject(sprintf(__('Did not understand handle %s', 'faq-with-categories'),
+                return $this->getReturnObject(sprintf(__('Did not understand handle %s', 'compare-table'),
                     var_export($args['handle'], true)));
         }
 
         return $returnObject;
     }
 
-    public function ordertaxonomypage()
+    public function tables_page()
     {
         wp_enqueue_script('ruigehond014_admin_javascript', plugin_dir_url(__FILE__) . 'admin.js', array(
             'jquery-ui-droppable',
@@ -272,45 +223,66 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         ), RUIGEHOND014_VERSION);
         echo '<div class="wrap ruigehond014"><h1>';
         echo esc_html(get_admin_page_title());
-        echo '</h1><p>';
-        echo __('This page only concerns itself with the order. The hierarchy is determined by the taxonomy itself.', 'faq-with-categories');
-        echo '<br/>';
-        echo __('If you assign a page to a taxonomy, the faq shortcut on that page will display faq-posts from that taxonomy.', 'faq-with-categories');
-        echo '</p><hr/>';
-        $terms = $this->getTerms(); // these are ordered to the best of the knowledge of the system already, but with parents
-        foreach ($terms as $index => $sub_terms) {
-            echo '<section class="rows-sortable">';
-            foreach ($sub_terms as $o => $term) {
-                echo '<div class="ruigehond014-order-term" data-id="';
-                echo $term['term_id'];
-                echo '" data-inferred_order="';
-                echo $o;
-                echo '">';
-                // ajax input to link a page to the taxonomy / explaining the taxonomy
-                echo '<input type="text" data-id_column="term_id" data-id="';
-                echo $term['term_id'];
-                echo '" data-handle="update" data-table_name="taxonomy_o" data-column_name="t" data-value="';
-                echo htmlentities($term['t']);
-                echo '" value="';
-                echo htmlentities($term['t']);
-                echo '"	class="ruigehond014 input post_title ajaxupdate ajaxsuggest tabbed';
-                if ($term['post_id'] === '0') {
-                    echo ' nonexistent';
-                }
-                echo '"/>';
-                // ordering handle
-                echo '<div class="sortable-handle">';
-                echo $term['term'];
-                echo '</div></div>';
-            }
-            echo '</section><hr/>';
-        }
+        echo '</h1>';
+        $current_url = admin_url('admin.php?page=compare-table');
+        // get the type(s), provide sortable rows and a button / input to add a new type
+        $this->tables_page_section($this->table_type, $current_url);
+        // get the subjects for the current type, provide sortable rows and a button to add a new subject
+        $this->tables_page_section($this->table_subject, $current_url);
+        // get the fields for the current type, provide sortable rows and a button to add a new field
+        $this->tables_page_section($this->table_field, $current_url);
+        // end
         echo '</div>';
+        // if a subject is selected, show the table that connects the fields + info box to that subject
     }
 
-    public function tables_page()
+    private function tables_page_section(string $table_name, string $current_url)
     {
-        echo 'hallo tables page';
+        $rows = $this->wpdb->get_results("SELECT * FROM {$table_name} ORDER BY o ASC;", OBJECT);
+        echo '<section class="rows-sortable ruigehond014_rows" data-table_name="', $table_name, '">';
+        foreach ($rows as $index => $row) {
+            echo '<div class="ruigehond014-order-row" data-id="';
+            echo $row->id;
+            echo '" data-inferred_order="';
+            echo $row->o;
+            echo '">';
+            echo '<div class="sortable-handle">sort handle</div>';
+            echo '<textarea data-id="';
+            echo $row->id;
+            echo '" data-handle="update" data-table_name="', $table_name, '" data-column_name="title" data-value="';
+            echo htmlentities($row->title);
+            echo '"	class="ruigehond014 input title ajaxupdate tabbed"/>';
+            echo htmlentities($row->title);
+            echo '</textarea>';
+            if (property_exists($row, 'description')) {
+                echo '<textarea data-id="';
+                echo $row->id;
+                echo '" data-handle="update" data-table_name="', $table_name, '" data-column_name="description" data-value="';
+                echo htmlentities($row->description);
+                echo '"	class="ruigehond014 input description ajaxupdate tabbed">';
+                echo htmlentities($row->description);
+                echo '</textarea>';
+            }
+            echo '<div class="ruigehond014-edit"><a href="';
+            echo $this->add_query_to_url($current_url, $table_name, urlencode($row->title));
+            echo '">EDIT</a></div>';
+            echo '</div>';
+        }
+        echo '</section>';
+        // new row
+        echo '<div class="ruigehond014-order-row" data-id="0">';
+        echo '<textarea data-handle="update" data-table_name="', $table_name, '" data-column_name="title" class="ruigehond014 input title ajaxupdate tabbed"></textarea>';
+        echo '</div><hr/>';
+    }
+
+    private function add_query_to_url(string $current_url, string $key, string $value): string
+    {
+        if (strpos($current_url, $key)) {
+            // remove when already present, also any tables selected after it, because they will be invalid
+            $pos = strpos($current_url, "$key=");
+            $current_url = substr($current_url, 0, $pos);
+        }
+        return "$current_url&$key=$value";
     }
 
     public function settings_page()
@@ -416,7 +388,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         return $options;
     }
 
-    public function menuitem()
+    public function menu_item()
     {
         // add top level page
         add_menu_page(
@@ -443,7 +415,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             __('Tables', 'compare-table'),
             'edit_posts',
             'compare-table', // the slug that identifies with the callback tables_page of the main menu item
-            'blub' // WHOA
+            __('Tables', 'compare-table'),
         );
     }
 
@@ -452,7 +424,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         if ($this->wpdb->get_var("SHOW TABLES LIKE '$this->table_type';") != $this->table_type) {
             $sql = "CREATE TABLE $this->table_type (
 						id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-						title text CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL
+						title text CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL,
+						o INT NOT NULL DEFAULT 1
                     );";
             $this->wpdb->query($sql);
             $sql = "INSERT INTO $this->table_type (title) VALUES ('Compare table');";
