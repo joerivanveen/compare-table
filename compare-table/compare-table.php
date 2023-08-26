@@ -26,6 +26,7 @@ if (!class_exists('ruigehond_0_4_0\ruigehond', false)) {
 }
 include_once("$ruigehond014_dirname/includes/ruigehond014.php");
 
+global $ruigehond014;
 $ruigehond014 = new ruigehond014\ruigehond014($ruigehond014_basename);
 
 add_action('init', array($ruigehond014, 'initialize'));

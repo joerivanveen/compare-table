@@ -341,20 +341,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             'ruigehond014' // page id
         );
         $labels = array(
-            'taxonomies' => __('Type the taxonomy you want to use for the categories.', 'faq-with-categories'),
-            'slug' => __('Slug for the individual faq entries (optional).', 'faq-with-categories'),
-            'title_links_to_overview' => __('When using title-only in shortcodes, link to the overview rather than individual FAQ page.', 'faq-with-categories'),
-            'schema_on_single_page' => __('Output the faq schema on individual page rather than overview.', 'faq-with-categories'),
-            'choose_option' => __('The ‘choose / show all’ option in top most select list.', 'faq-with-categories'),
-            'choose_all' => __('The ‘choose / show all’ option in subsequent select lists.', 'faq-with-categories'),
-            'search_faqs' => __('The placeholder in the search bar for the faqs.', 'faq-with-categories'),
-            'header_tag' => __('Tag used for the header on faq page (e.g. h4), invalid input may cause errors on your page.', 'faq-with-categories'),
-            'max' => __('Number of faqs shown before ‘Show more’ button.', 'faq-with-categories'),
-            'max_ignore_elsewhere' => __('Only use the more button on the central FAQ page, nowhere else.', 'faq-with-categories'),
-            'more_button_text' => __('The text on the ‘Show more’ button.', 'faq-with-categories'),
-            'no_results_warning' => __('Text shown when search or filter results in 0 faqs found.', 'faq-with-categories'),
-            'exclude_from_search' => __('Will exclude the FAQ posts from site search queries.', 'faq-with-categories'),
-            'exclude_from_count' => __('FAQ posts will not count towards total posts in taxonomies.', 'faq-with-categories'),
+            'remove_on_uninstall' => __('Check this if you want to remove all data when uninstalling the plugin.', 'compare-table'),
             'queue_frontend_css' => __('By default a small css-file is output to the frontend to format the entries. Uncheck to handle the css yourself.', 'faq-with-categories'),
         );
         foreach ($labels as $setting_name => $explanation) {
@@ -376,28 +363,23 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
     public function echo_settings_field($args)
     {
         $setting_name = $args['setting_name'];
-        $str = '';
         switch ($setting_name) {
             case 'queue_frontend_css':
-            case 'exclude_from_count':
-            case 'title_links_to_overview':
-            case 'max_ignore_elsewhere':
-            case 'schema_on_single_page':
-            case 'exclude_from_search': // make checkbox that transmits 1 or 0, depending on status
-                $str .= '<label><input type="hidden" name="ruigehond014[' . $setting_name . ']" value="' .
-                    (($this->$setting_name) ? '1' : '0') . '"><input type="checkbox"';
+            case 'remove_on_uninstall': // make checkbox that transmits 1 or 0, depending on status
+                echo '<label><input type="hidden" name="ruigehond014[', $setting_name, ']" value="';
                 if ($this->$setting_name) {
-                    $str .= ' checked="checked"';
+                    echo '1"><input type="checkbox" checked="checked"';
+                } else {
+                    echo '0"><input type="checkbox"';
                 }
-                $str .= ' onclick="this.previousSibling.value=1-this.previousSibling.value" class="' .
-                    $args['class_name'] . '"/>' . $args['label_for'] . '</label>';
+                echo ' onclick="this.previousSibling.value=1-this.previousSibling.value" class="';
+                echo $args['class_name'], '"/>', $args['label_for'], '</label>';
                 break;
             default: // make text input
-                $str .= '<input type="text" name="ruigehond014[' . $setting_name . ']" value="';
-                $str .= htmlentities($this->$setting_name);
-                $str .= '" style="width: 162px" class="' . $args['class_name'] . '"/> <label>' . $args['label_for'] . '</label>';
+                echo '<input type="text" name="ruigehond014[', $setting_name, ']" value="';
+                echo htmlentities($this->$setting_name);
+                echo '" style="width: 162px" class="', $args['class_name'], '"/> <label>', $args['label_for'], '</label>';
         }
-        echo $str;
     }
 
     public function settings_validate($input)
@@ -435,7 +417,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             'Compare table',
             'edit_posts',
             'compare-table',
-            array($this, 'settings_page'), // callback unused
+            array($this, 'settings_page'),
             'dashicons-editor-table',
             20
         );
@@ -511,8 +493,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                      $this->table_field,
                      $this->table_compare
                  ) as $table_name) {
-            if ($this->wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
-                $sql = "DROP TABLE $table_name";
+            if ($this->wpdb->get_var("SHOW TABLES LIKE '$table_name';") == $table_name) {
+                $sql = "DROP TABLE $table_name;";
                 $this->wpdb->query($sql);
             }
         }
