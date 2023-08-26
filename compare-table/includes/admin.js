@@ -82,7 +82,7 @@ function Ruigehond014_input($, HTMLElement) {
     this.input = HTMLElement;
     this.$input = $(HTMLElement);
     this.$ = $; // cache jQuery to stay compatible with everybody
-    this.id = parseInt(this.$input.attr('data-id'));
+    this.id = parseInt(this.$input.attr('data-id')) || 0;
     this.ajax = new Ruigehond014Ajax(this);
     // suggestions are disabled when input lacks class ajaxsuggest
     this.suggest = new Ruigehond014InputSuggestions(this);
@@ -207,11 +207,11 @@ Ruigehond014_input.prototype.save = function (e) {
         this.ajax.call(data, function (json) {
             self.suggest.remove();
             if (json.data) {
-                if (self.id === 0) {
+                if (0 === self.id) {
                     // new id is returned by server
                     self.id = json.data.id;
-                    // add at the end TODO do not rely on data.html but fix it here? What is in the json anyway?
-                    self.$input.parent('.ruigehond14_row').before(json.data.html);
+                    // add row
+                    self.$input.parent().before(json.data.html);
                     // clear input
                     self.$input.val('');
                     self.$input.removeClass('unsaved');
@@ -336,10 +336,10 @@ Ruigehond014Ajax.prototype.call = function (data, callback) {
                     const p = new RuigehondModal(hond, json.question);
                     p.popup();
                 }
-                self.showMessages(json);
             } else {
                 console.warn('timestamp ' + json.data.timestamp + ' incorrect, need: ' + $input.attr('data-timestamp'))
             }
+            self.showMessages(json);
         },
         error: function (json) {
             $input.removeAttr('disabled');

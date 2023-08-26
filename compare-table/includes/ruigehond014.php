@@ -139,16 +139,17 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         if (false === current_user_can('edit_posts')) {
             return $this->getReturnObject(__('You do not have sufficient permissions to access this page.', 'compare-table'));
         }
-        $table_name = stripslashes($args['table_name']);
-        if (false === in_array($table_name, array(
-                $this->table_type,
-                $this->table_subject,
-                $this->table_field,
-                $this->table_compare
+        $short_table_name = stripslashes($args['table_name']);
+        if (false === in_array($short_table_name, array(
+                'type',
+                'subject',
+                'field',
+                'compare',
             ))) {
             return $this->getReturnObject(sprintf(__('No such table %s', 'compare-table'),
                 var_export($args['table_name'], true)));
         }
+        $table_name = "{$this->table_prefix}$short_table_name";
         if (isset($args['id'])) {
             $id = (int)$args['id']; // this must be the same as $this->row->id
         } else {
@@ -181,27 +182,49 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                             $where[$id_column_name] = (int)$args[$id_column_name];
                         }
                     }
+                    // validate present id's for table when insert is requested
+                    if (0 === $id) {
+                        switch ($short_table_name) {
+                            case 'subject':
+                            case 'field':
+                                if (false === isset($where['type_id']) || 0 === $where['type_id']) {
+                                    $returnObject->add_message(sprintf(__('Missing id %s', 'compare-table'), 'type_id'), 'error');
+                                    return $returnObject;
+                                }
+                                break;
+                            case 'compare':
+                                if (false === isset($where['subject_id'], $where['field_id'])) {
+                                    $returnObject->add_message(sprintf(__('Missing id %s', 'compare-table'), 'subject_id, field_id'), 'error');
+                                    return $returnObject;
+                                }
+                                break;
+                        }
+                    }
+                    // do the upsert
                     $upsertedRows = 0;
                     switch ($column_name) {
                         case 'title':
                         case 'description':
-                            $upsertedRows = $this->upsertDb($table_name, array('title' => $value), $where);
+                            $upsertedRows = $this->upsertDb($table_name, array($column_name => $value), $where);
                             break;
                         default:
                             $returnObject->add_message(sprintf(__('No such column %s', 'compare-table'),
                                 var_export($column_name, true)), 'error');
                     }
-
+                    // report the upsert
                     if (0 === $upsertedRows) {
                         $returnObject->add_message(__('Not updated', 'compare-table'), 'warn');
                     } else {
                         $returnObject->set_success(true);
-                        if (0 < $upsertedRows) {
+                        if (0 < $upsertedRows) { // this was an insert
                             $id = $upsertedRows;
                             $args['id'] = $id;
+                            // also set the order so it appears at the bottom
+                            $this->upsertDb($table_name, array('o' => $id), array('id' => $id));
+                            // return the entire row as html
+                            $args['html'] = '<p>HAHAHAHAHAHA</p>';
                         }
-                        $args['value'] = $this->wpdb->get_var(
-                            "SELECT $column_name FROM $table_name WHERE 'id' = $id;");
+                        $args['value'] = $this->wpdb->get_var("SELECT $column_name FROM $table_name WHERE id = $id;");
                         $returnObject->set_data($args);
                     }
                 }
@@ -226,20 +249,30 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         echo '</h1>';
         $current_url = admin_url('admin.php?page=compare-table');
         // get the type(s), provide sortable rows and a button / input to add a new type
-        $this->tables_page_section($this->table_type, $current_url);
+        $this->tables_page_section('type', $current_url);
         // get the subjects for the current type, provide sortable rows and a button to add a new subject
-        $this->tables_page_section($this->table_subject, $current_url);
+        $this->tables_page_section('subject', $current_url);
         // get the fields for the current type, provide sortable rows and a button to add a new field
-        $this->tables_page_section($this->table_field, $current_url);
+        $this->tables_page_section('field', $current_url);
         // end
         echo '</div>';
         // if a subject is selected, show the table that connects the fields + info box to that subject
     }
 
-    private function tables_page_section(string $table_name, string $current_url)
+    private function tables_page_section(string $table_short_name, string $current_url)
     {
-        $rows = $this->wpdb->get_results("SELECT * FROM {$table_name} ORDER BY o ASC;", OBJECT);
-        echo '<section class="rows-sortable ruigehond014_rows" data-table_name="', $table_name, '">';
+        $where = '';
+        $type_id = (int)($_GET['type_id'] ?? 0);
+        switch ($table_short_name) {
+            case 'subject':
+            case 'field':
+                if (0 < $type_id) $where = "WHERE type_id = $type_id";
+                break;
+            case 'compare':
+                //todo
+        }
+        $rows = $this->wpdb->get_results("SELECT * FROM $this->table_prefix$table_short_name $where ORDER BY o ASC;", OBJECT);
+        echo '<section class="rows-sortable ruigehond014_rows" data-table_name="', $table_short_name, '">';
         foreach ($rows as $index => $row) {
             echo '<div class="ruigehond014-order-row" data-id="';
             echo $row->id;
@@ -249,7 +282,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             echo '<div class="sortable-handle">sort handle</div>';
             echo '<textarea data-id="';
             echo $row->id;
-            echo '" data-handle="update" data-table_name="', $table_name, '" data-column_name="title" data-value="';
+            echo '" data-handle="update" data-table_name="', $table_short_name, '" data-column_name="title" data-value="';
             echo htmlentities($row->title);
             echo '"	class="ruigehond014 input title ajaxupdate tabbed"/>';
             echo htmlentities($row->title);
@@ -257,22 +290,22 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             if (property_exists($row, 'description')) {
                 echo '<textarea data-id="';
                 echo $row->id;
-                echo '" data-handle="update" data-table_name="', $table_name, '" data-column_name="description" data-value="';
-                echo htmlentities($row->description);
+                echo '" data-handle="update" data-table_name="', $table_short_name, '" data-column_name="description" data-value="';
+                if (isset($row->description)) echo htmlentities($row->description);
                 echo '"	class="ruigehond014 input description ajaxupdate tabbed">';
-                echo htmlentities($row->description);
+                if (isset($row->description)) echo htmlentities($row->description);
                 echo '</textarea>';
             }
             echo '<div class="ruigehond014-edit"><a href="';
-            echo $this->add_query_to_url($current_url, $table_name, urlencode($row->title));
+            echo $this->add_query_to_url($current_url, "{$table_short_name}_id", urlencode($row->id));
             echo '">EDIT</a></div>';
             echo '</div>';
         }
-        echo '</section>';
         // new row
         echo '<div class="ruigehond014-order-row" data-id="0">';
-        echo '<textarea data-handle="update" data-table_name="', $table_name, '" data-column_name="title" class="ruigehond014 input title ajaxupdate tabbed"></textarea>';
-        echo '</div><hr/>';
+        echo '<textarea data-handle="update" data-table_name="', $table_short_name, '" data-type_id="',$type_id,'" data-column_name="title" class="ruigehond014 input title ajaxupdate tabbed"></textarea>';
+        echo '</div>';
+        echo '</section><hr/>';
     }
 
     private function add_query_to_url(string $current_url, string $key, string $value): string

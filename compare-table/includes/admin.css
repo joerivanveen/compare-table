@@ -13,6 +13,9 @@
 .ruigehond014 .unsaved {
     background-color: rgba(255, 0, 0, .2);
 }
+.ui-sortable-handle:hover {
+    cursor: grab;
+}
 
 .ruigehond.modal.dialog,
 #RuigehondModal {
