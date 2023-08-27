@@ -42,7 +42,7 @@ function ruigehond014_setup() {
                     'table_name': target.getAttribute('data-table_name'),
                     'order': order,
                     'id': dropped_id,
-                    'nonce': Ruigehond014.nonce,
+                    'nonce': Ruigehond014_global.nonce,
                 };
                 $.ajax({
                     url: ajaxurl,
