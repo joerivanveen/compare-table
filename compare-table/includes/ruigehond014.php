@@ -292,12 +292,17 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         ));
         $subject_id = 0;
         $field_id = 0;
+        $html_title = '';
         if (isset($_GET['subject_id'])) {
             $subject_id = (int)$_GET['subject_id'];
-            $type_id = (int)$this->wpdb->get_var("SELECT type_id FROM $this->table_subject WHERE id = $subject_id;");
+            $row = $this->wpdb->get_row("SELECT type_id, title FROM $this->table_subject WHERE id = $subject_id;");
+            $type_id = (int)$row->type_id;
+            $html_title = htmlentities($row->title);
         } elseif (isset($_GET['field_id'])) {
             $field_id = (int)$_GET['field_id'];
-            $type_id = (int)$this->wpdb->get_var("SELECT type_id FROM $this->table_field WHERE id = $field_id;");
+            $row = $this->wpdb->get_row("SELECT type_id, title FROM $this->table_field WHERE id = $field_id;");
+            $type_id = (int)$row->type_id;
+            $html_title = htmlentities($row->title);
         } else {
             $type_id = (int)($_GET['type_id'] ?? 0);
         }
@@ -320,7 +325,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         // if a subject or field is selected, show the table that connects the fields + info box to that subject
         if ($subject_id + $field_id > 0) {
             echo '<div id="ruigehond014-compare-overlay"><div class="wrap ruigehond014 compare">';
-            // todo put clarifying title up top and a close button
+            echo '<button class="close" data-handle="close">X</button>';
+            echo '<h2>', $html_title, '</h2>';
             $this->tables_page_section_compare($type_id, $subject_id, $field_id);
             echo '</div></div>';
         }
@@ -572,19 +578,12 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             switch ($key) {
                 // on / off flags (1 vs 0 on form submit, true / false otherwise
                 case 'queue_frontend_css':
-                case 'exclude_from_search':
-                case 'title_links_to_overview':
-                case 'max_ignore_elsewhere':
-                case 'exclude_from_count':
+                case 'remove_on_uninstall':
                     $options[$key] = ($value === '1' or $value === true);
                     break;
                 case 'max':
                     if (abs(intval($value)) > 0) $options[$key] = abs(intval($value));
                     break;
-                case 'taxonomies': // check if it's an existing taxonomy
-                    if (false === taxonomy_exists($value)) $value = 'category';
-                // intentional fall through, just validated the value
-                // by default just accept the value
                 default:
                     $options[$key] = $value;
             }

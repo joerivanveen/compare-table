@@ -72,6 +72,12 @@ function ruigehond014_setup() {
         $.each($('input[type="checkbox"].ruigehond014.ajaxupdate, input[type="text"].ruigehond014.ajaxupdate, textarea.ruigehond014.ajaxupdate, input[type="button"].ruigehond014.ajaxupdate'), function (key, value) {
             value.prototype = new Ruigehond014_input($, value);
         });
+        // activate close button
+        if ($('#ruigehond014-compare-overlay .close').length === 1) {
+            $('#ruigehond014-compare-overlay .close').on('click', function () {
+                $('#ruigehond014-compare-overlay').remove();
+            });
+        }
 // okipokoi
     })(jQuery);
 }

@@ -2,17 +2,21 @@
     font-size: 125%;
     padding: .2em .5em;
 }
+
 .ruigehond014-order-term .sortable-handle {
     cursor: grab;
     display: inline-block;
 }
+
 .ruigehond014-order-term input {
     width: 242px;
     margin-right: 4px;
 }
+
 .ruigehond014 .unsaved {
     background-color: rgba(255, 0, 0, .2);
 }
+
 .ui-sortable-handle:hover {
     cursor: grab;
 }
@@ -23,9 +27,11 @@
 .ruigehond014-row.active {
     background-color: rgba(255, 255, 255, .24);
 }
+
 .delete {
     display: none;
 }
+
 .delete[data-id] {
     display: inline-block;
 }
@@ -41,12 +47,20 @@
     height: 100vh;
     width: 100%;
 }
+
 #ruigehond014-compare-overlay .wrap {
     float: right;
-    background-color: rgb(240,240,240);
-    border-left: solid 1px rgb(191,191,191);
+    background-color: rgb(240, 240, 240);
+    border-left: solid 1px rgb(191, 191, 191);
     height: 100vh;
     overflow-y: scroll;
+    padding-left: 10px;
+}
+
+#ruigehond014-compare-overlay .wrap .close {
+    float: right;
+    margin: 10px;
+    cursor: pointer;
 }
 
 /**
@@ -88,21 +102,23 @@
     border-bottom-left-radius: 1em;
     border-bottom-right-radius: 1em;
     color: rgb(0, 0, 0);
+    background-color: rgb(240, 240, 240);
     font-weight: bold;
     display: block;
+    border: none;
+    box-shadow: 0 0 3px 3px rgba(0, 0, 0, .09);
 }
 
 .ruigehond.notice.log {
-    background-color: rgba(130, 210, 120, 1);
+    background-color: rgb(130, 210, 120);
 }
 
 .ruigehond.notice.warn {
-    background-color: rgba(255, 200, 0, 1);
-    color: #fff;
+    background-color: rgb(255, 200, 0);
 }
 
 .ruigehond.notice.error {
-    background-color: rgba(200, 0, 0, 1);
+    background-color: rgb(200, 0, 0);
     color: #fff;
 }
 
