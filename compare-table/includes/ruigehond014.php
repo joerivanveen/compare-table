@@ -199,12 +199,15 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                                 return $returnObject;
                             }
                             break;
-                        // case compare can always be deleted
+                        case 'compare': // can always be deleted, but needs different handle on client
+                            $args['handle'] = 'clear';
+                            break;
                     }
                     $deletedRows = $this->wpdb->delete($table_name, array('id' => $id));
                     if (false === $deletedRows) {
                         $returnObject->add_message(__('Not deleted', 'compare-table'), 'warn');
                     } else {
+                        $args['id'] = 0; // deleted...
                         $returnObject->set_success(true);
                         $returnObject->set_data($args);
                     }
@@ -219,19 +222,22 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                     switch ($short_table_name) {
                         case 'subject':
                         case 'field':
-                            if (false === isset($args['type_id']) || 0 === (int)$args['type_id']) {
+                            if (false === isset($args['type_id']) || 0 === ($type_id = (int)$args['type_id'])) {
                                 $returnObject->add_message(sprintf(__('Missing id %s', 'compare-table'), 'type_id'), 'error');
                                 return $returnObject;
                             }
-                            $where['type_id'] = (int)$args['type_id'];
+                            $where['type_id'] = $type_id;
                             break;
                         case 'compare':
-                            if (false === isset($args['subject_id'], $args['field_id'])) {
+                            if (
+                                false === isset($args['subject_id'], $args['field_id'])
+                                || 0 === ($subject_id = (int)$args['subject_id'])
+                                || 0 === ($field_id = (int)$args['field_id'])
+                            ) {
                                 $returnObject->add_message(sprintf(__('Missing id %s', 'compare-table'), 'subject_id, field_id'), 'error');
                                 return $returnObject;
                             }
-                            $returnObject->add_message(sprintf(__('Compare not working yet %s', 'compare-table'), 'TODO'), 'error');
-                            return $returnObject;
+                            $where = array('subject_id' => $subject_id, 'field_id' => $field_id);
                             break;
                     }
                 }
@@ -254,11 +260,13 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                     if (0 < $upsertedRows) { // this was an insert
                         $id = $upsertedRows;
                         $args['id'] = $id;
-                        // also set the order so it appears at the bottom
-                        $this->upsertDb($table_name, array('o' => $id), array('id' => $id));
-                        // return the entire row as html
-                        $row = $this->wpdb->get_row("SELECT * FROM $table_name WHERE id = $id;", OBJECT);
-                        $args['html'] = $this->get_row_html($row, $short_table_name, $this->admin_url);
+                        if ('compare' !== $short_table_name) {
+                            // also set the order so it appears at the bottom
+                            $this->upsertDb($table_name, array('o' => $id), array('id' => $id));
+                            // return the entire row as html
+                            $row = $this->wpdb->get_row("SELECT * FROM $table_name WHERE id = $id;", OBJECT);
+                            $args['html'] = $this->get_row_html($row, $short_table_name, $this->admin_url);
+                        }
                     }
                     $args['value'] = $this->wpdb->get_var("SELECT $column_name FROM $table_name WHERE id = $id;");
                     $returnObject->set_data($args);
@@ -282,7 +290,6 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         wp_localize_script('ruigehond014_admin_javascript', 'Ruigehond014_global', array(
             'nonce' => $ajax_nonce,
         ));
-        $type_id = (int)($_GET['type_id'] ?? 0);
         $subject_id = 0;
         $field_id = 0;
         if (isset($_GET['subject_id'])) {
@@ -291,6 +298,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         } elseif (isset($_GET['field_id'])) {
             $field_id = (int)$_GET['field_id'];
             $type_id = (int)$this->wpdb->get_var("SELECT type_id FROM $this->table_field WHERE id = $field_id;");
+        } else {
+            $type_id = (int)($_GET['type_id'] ?? 0);
         }
         $this->table_ids = array(
             'type' => $type_id,
@@ -310,17 +319,78 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         echo '</div>';
         // if a subject or field is selected, show the table that connects the fields + info box to that subject
         if ($subject_id + $field_id > 0) {
-            echo '<div class="wrap ruigehond014 compare">';
-            $this->tables_page_section_compare($subject_id, $field_id);
+            echo '<div class="wrap ruigehond014 compare" id="ruigehond014-compare-overlay">';
+            // todo put clarifying title up top
+            $this->tables_page_section_compare($type_id, $subject_id, $field_id);
             echo '</div>';
         }
     }
 
-    private function tables_page_section_compare(int $subject_id, int $field_id)
+    private function tables_page_section_compare(int $type_id, int $subject_id, int $field_id)
     {
-        // todo get sql to get the compare table
+        if ($subject_id > 0) {
+            $rows = $this->wpdb->get_results("
+            SELECT 'field' parent_name, f.title parent_title, f.id parent_id, c.*
+                FROM $this->table_field f
+                    LEFT OUTER JOIN $this->table_compare c ON f.id = c.field_id
+                    LEFT OUTER JOIN $this->table_subject s ON s.id = $subject_id
+                WHERE f.type_id = $type_id
+                ORDER BY s.o ASC;
+            ", OBJECT);
+        } elseif ($field_id > 0) {
+            $rows = $this->wpdb->get_results("
+            SELECT 'subject' parent_name, s.title parent_title, s.id parent_id, c.*
+                FROM $this->table_subject s
+                    LEFT OUTER JOIN $this->table_compare c ON s.id = c.subject_id
+                    LEFT OUTER JOIN $this->table_field f ON f.id = $field_id
+                WHERE s.type_id = $type_id
+                ORDER BY f.o ASC;
+            ", OBJECT);
+        } else {
+            return;
+        }
+        echo '<!--', $this->wpdb->last_query, '-->'; // todo only for debugging
         echo '<section class="ruigehond014_rows" data-table_name="compare">';
-        // todo
+        foreach ($rows as $index => $row) {
+            $parent_name = $row->parent_name;
+            $label = $row->parent_title;
+            if ('subject' === $parent_name) {
+                $subject_id = $row->parent_id;
+            } else { // 'field'
+                $field_id = $row->parent_id;
+            }
+            $id = $row->id;
+            // write compare specific rows...
+            echo '<div class="ruigehond014-row compare-row"><label>';
+            echo $label;
+            echo '</label>';
+            foreach (array('title', 'description') as $index2 => $column_name) {
+                if (isset($row->{$column_name})) {
+                    $html_value = htmlentities($row->{$column_name});
+                } else {
+                    $html_value = '';
+                }
+                echo '<textarea data-id="';
+                echo $id;
+                echo '" data-handle="update" data-table_name="compare" data-column_name="';
+                echo $column_name;
+                echo '" data-value="';
+                echo $html_value;
+                echo '" data-field_id="';
+                echo $field_id;
+                echo '" data-subject_id="';
+                echo $subject_id;
+                echo '"	class="ruigehond014 input ';
+                echo $column_name;
+                echo ' ajaxupdate tabbed"/>';
+                echo $html_value;
+                echo '</textarea>';
+            }
+            echo '<div class="ruigehond014-delete"><input type="button" data-handle="delete_permanently" data-table_name="compare"';
+            if (null !== $id) echo " data-id=\"$id\"";
+            echo ' class="delete ruigehond014 ajaxupdate" value="CLEAR"/></div>';
+            echo '</div>';
+        }
         echo '</section>';
     }
 
@@ -347,7 +417,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             echo $this->get_row_html($row, $table_short_name, $this->admin_url);
         }
         // new row
-        echo '<div class="ruigehond014-order-row" data-id="0">';
+        echo '<div class="ruigehond014-row orderable" data-id="0">';
         echo '<textarea data-handle="update" data-table_name="';
         echo $table_short_name;
         echo '" data-type_id="';
@@ -361,11 +431,10 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
     {
         $html_title = htmlentities($row->title);
         $id = (int)$row->id;
-        $active_id = $this->table_ids[$table_short_name];
         ob_start();
-        echo '<div class="ruigehond014-order-row ';
+        echo '<div class="ruigehond014-row orderable ';
         echo "$table_short_name-row";
-        if ($id === $active_id) {
+        if (isset($this->table_ids[$table_short_name]) && $id === $this->table_ids[$table_short_name]) {
             echo ' active';
         }
         echo '" data-id="';

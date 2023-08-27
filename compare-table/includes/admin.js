@@ -171,15 +171,17 @@ Ruigehond014_input.prototype.delete = function () { // this can actually delete 
         self = this;
     this.ajax.call(data, function (json) {
         const data = json.data, data_handle = data.handle;
-        if ('clear_offer' === data_handle) {
+        if ('clear' === data_handle) {
             // clear all the values...
-            document.querySelectorAll('input[data-handle="update_offer"]').forEach(function (el) {
-                el.value = '';
+            self.$input.parents('.' + data.table_name + '-row').find('.ajaxupdate').each(function (i, element) {
+                element.removeAttribute('data-id');
+                element.removeAttribute('data-value');
+                if ('button' !== element.type) element.value = '';
             });
         } else if ('undelete' === data_handle) {
             self.$input.parents('.' + data.table_name + '-row').removeClass('marked-for-deletion');
         } else if ('delete_permanently' === data_handle) {
-            self.$input.parents('.' + data.table_name + '-row').fadeOut(432, function() {
+            self.$input.parents('.' + data.table_name + '-row').fadeOut(432, function () {
                 this.remove();
             });
         } else if ('delete_array_option' === data_handle) {
@@ -210,14 +212,30 @@ Ruigehond014_input.prototype.save = function (e) {
         data.value = this.$input.val();
         this.ajax.call(data, function (json) {
             self.suggest.remove();
+            self.id = parseInt(self.$input.attr('data-id')) || 0;
             if (json.data) {
+                // when you edit anything other than the compare table
+                // remove it for the info will most likely be out of date
+                const overlay = document.getElementById('ruigehond014-compare-overlay')
+                if (overlay && 'compare' !== json.data.table_name) {
+                    overlay.remove();
+                }
+                // update the input element
                 if (0 === self.id) {
                     // new id is returned by server
                     self.id = json.data.id;
-                    // add row
-                    self.$input.parent().before(json.data.html);
-                    // clear input
-                    self.$input.val('');
+                    if (json.data.hasOwnProperty('html')) {
+                        // add row
+                        self.$input.parent().before(json.data.html);
+                        // clear input
+                        self.$input.val('');
+                    } else {
+                        // update inputs for this row with new id for future reference
+                        const new_id = self.id.toString();
+                        self.$input.parents('.' + json.data.table_name + '-row').find('.ajaxupdate').each(function (i, element) {
+                            element.setAttribute('data-id', new_id);
+                        });
+                    }
                     self.$input.removeClass('unsaved');
                     self.$input.removeAttr('disabled');
                     // (re-)activate handlers for input

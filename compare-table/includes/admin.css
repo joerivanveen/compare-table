@@ -20,8 +20,14 @@
 /**
  * rows
  */
-.ruigehond014-order-row.active {
+.ruigehond014-row.active {
     background-color: rgba(255, 255, 255, .24);
+}
+.delete {
+    display: none;
+}
+.delete[data-id] {
+    display: inline-block;
 }
 
 /**
