@@ -319,10 +319,10 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         echo '</div>';
         // if a subject or field is selected, show the table that connects the fields + info box to that subject
         if ($subject_id + $field_id > 0) {
-            echo '<div class="wrap ruigehond014 compare" id="ruigehond014-compare-overlay">';
-            // todo put clarifying title up top
+            echo '<div id="ruigehond014-compare-overlay"><div class="wrap ruigehond014 compare">';
+            // todo put clarifying title up top and a close button
             $this->tables_page_section_compare($type_id, $subject_id, $field_id);
-            echo '</div>';
+            echo '</div></div>';
         }
     }
 
@@ -332,8 +332,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             $rows = $this->wpdb->get_results("
             SELECT 'field' parent_name, f.title parent_title, f.id parent_id, c.*
                 FROM $this->table_field f
-                    LEFT OUTER JOIN $this->table_compare c ON f.id = c.field_id
-                    LEFT OUTER JOIN $this->table_subject s ON s.id = $subject_id
+                    JOIN $this->table_subject s ON s.id = $subject_id
+                    LEFT OUTER JOIN $this->table_compare c ON c.field_id = f.id AND c.subject_id = s.id
                 WHERE f.type_id = $type_id
                 ORDER BY s.o ASC;
             ", OBJECT);
@@ -341,8 +341,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             $rows = $this->wpdb->get_results("
             SELECT 'subject' parent_name, s.title parent_title, s.id parent_id, c.*
                 FROM $this->table_subject s
-                    LEFT OUTER JOIN $this->table_compare c ON s.id = c.subject_id
-                    LEFT OUTER JOIN $this->table_field f ON f.id = $field_id
+                    JOIN $this->table_field f ON f.id = $field_id
+                    LEFT OUTER JOIN $this->table_compare c ON c.subject_id = s.id AND c.field_id = f.id
                 WHERE s.type_id = $type_id
                 ORDER BY f.o ASC;
             ", OBJECT);
