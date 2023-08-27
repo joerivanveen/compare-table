@@ -73,9 +73,10 @@ function ruigehond014_setup() {
             value.prototype = new Ruigehond014_input($, value);
         });
         // activate close button
-        if ($('#ruigehond014-compare-overlay .close').length === 1) {
-            $('#ruigehond014-compare-overlay .close').on('click', function () {
-                $('#ruigehond014-compare-overlay').remove();
+        let $close;
+        if (($close = $('#ruigehond014-compare-overlay .close')).length === 1) {
+            $close.on('click', function () {
+                $('#ruigehond014-compare-overlay').fadeOut(); // works because new overlay is on a new page load
             });
         }
 // okipokoi
@@ -207,7 +208,7 @@ Ruigehond014_input.prototype.saveBooleanOption = function () {
     });
 };
 
-Ruigehond014_input.prototype.save = function (e) {
+Ruigehond014_input.prototype.save = function () {
     this.suggest.remove();
     if (this.hasChanged()) {
         console.log('Send update to server.');
@@ -667,7 +668,7 @@ RuigehondNotice.prototype.set_level = function (level) {
 if (document.readyState === 'complete') {
     ruigehond014_setup();
 } else {
-    window.addEventListener('load', function (event) {
+    window.addEventListener('load', function () {
         ruigehond014_setup();
     });
 }

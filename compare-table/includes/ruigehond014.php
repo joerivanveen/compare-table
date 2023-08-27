@@ -32,7 +32,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
     {
         if (current_user_can('administrator')) {
             error_reporting(E_ALL);
-            ini_set('display_errors', 1);
+            ini_set('display_errors', '1');
         }
         $plugin_dir_url = plugin_dir_url(__FILE__);
         if (is_admin()) {
@@ -65,7 +65,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
     public function settings_link($links)
     {
         $link_text = __('Tables', 'compare-table');
-        $link = "<a href=\"{$this->admin_url}\">$link_text</a>";
+        $link = "<a href=\"$this->admin_url\">$link_text</a>";
         array_unshift($links, $link);
 
         return $links;
@@ -341,7 +341,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                     JOIN $this->table_subject s ON s.id = $subject_id
                     LEFT OUTER JOIN $this->table_compare c ON c.field_id = f.id AND c.subject_id = s.id
                 WHERE f.type_id = $type_id
-                ORDER BY s.o ASC;
+                ORDER BY s.o;
             ", OBJECT);
         } elseif ($field_id > 0) {
             $rows = $this->wpdb->get_results("
@@ -350,7 +350,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                     JOIN $this->table_field f ON f.id = $field_id
                     LEFT OUTER JOIN $this->table_compare c ON c.subject_id = s.id AND c.field_id = f.id
                 WHERE s.type_id = $type_id
-                ORDER BY f.o ASC;
+                ORDER BY f.o;
             ", OBJECT);
         } else {
             return;
@@ -417,7 +417,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                 }
                 break;
         }
-        $rows = $this->wpdb->get_results("SELECT * FROM $this->table_prefix$table_short_name $where ORDER BY o ASC;", OBJECT);
+        $rows = $this->wpdb->get_results("SELECT * FROM $this->table_prefix$table_short_name $where ORDER BY o;", OBJECT);
         echo '<section class="rows-sortable ruigehond014_rows" data-table_name="', $table_short_name, '">';
         foreach ($rows as $index => $row) {
             echo $this->get_row_html($row, $table_short_name, $this->admin_url);
@@ -571,7 +571,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         }
     }
 
-    public function settings_validate($input)
+    public function settings_validate($input): array
     {
         $options = (array)get_option('ruigehond014');
         foreach ($input as $key => $value) {
