@@ -11,6 +11,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
     // variables that hold cached items
     private $database_version, $basename, $admin_url, $queue_frontend_css, $remove_on_uninstall;
     private $table_prefix, $table_type, $table_subject, $table_field, $table_compare;
+    private $table_ids;
 
     public function __construct($basename)
     {
@@ -23,12 +24,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         $this->table_subject = "{$wp_prefix}ruigehond014_subject";
         $this->table_field = "{$wp_prefix}ruigehond014_field";
         $this->table_compare = "{$wp_prefix}ruigehond014_compare";
-        // set some options
-        $this->database_version = $this->getOption('database_version', '0.0.0');
+        // settings used in front facing part of plugin
         $this->queue_frontend_css = $this->getOption('queue_frontend_css', true);
-        $this->remove_on_uninstall = $this->getOption('remove_on_uninstall', false);
-        // standard page url
-        $this->admin_url = admin_url('admin.php?page=compare-table');
     }
 
     public function initialize()
@@ -39,6 +36,14 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         }
         $plugin_dir_url = plugin_dir_url(__FILE__);
         if (is_admin()) {
+            // settings used only for admin pages
+            $this->table_ids = array();
+            // set some options
+            $this->database_version = $this->getOption('database_version', '0.0.0');
+            $this->remove_on_uninstall = $this->getOption('remove_on_uninstall', false);
+            // standard page url
+            $this->admin_url = admin_url('admin.php?page=compare-table');
+            // regular
             $this->load_translations('compare-table');
             add_action('admin_init', array($this, 'settings'));
             add_action('admin_menu', array($this, 'menu_item'));
@@ -277,6 +282,21 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         wp_localize_script('ruigehond014_admin_javascript', 'Ruigehond014_global', array(
             'nonce' => $ajax_nonce,
         ));
+        $type_id = (int)($_GET['type_id'] ?? 0);
+        $subject_id = 0;
+        $field_id = 0;
+        if (isset($_GET['subject_id'])) {
+            $subject_id = (int)$_GET['subject_id'];
+            $type_id = (int)$this->wpdb->get_var("SELECT type_id FROM $this->table_subject WHERE id = $subject_id;");
+        } elseif (isset($_GET['field_id'])) {
+            $field_id = (int)$_GET['field_id'];
+            $type_id = (int)$this->wpdb->get_var("SELECT type_id FROM $this->table_field WHERE id = $field_id;");
+        }
+        $this->table_ids = array(
+            'type' => $type_id,
+            'subject' => $subject_id,
+            'field' => $field_id,
+        );
         echo '<div class="wrap ruigehond014"><h1>';
         echo esc_html(get_admin_page_title());
         echo '</h1>';
@@ -288,22 +308,26 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         $this->tables_page_section('field');
         // end
         echo '</div>';
-        // todo if a subject is selected, show the table that connects the fields + info box to that subject
+        // if a subject or field is selected, show the table that connects the fields + info box to that subject
+        if ($subject_id + $field_id > 0) {
+            echo '<div class="wrap ruigehond014 compare">';
+            $this->tables_page_section_compare($subject_id, $field_id);
+            echo '</div>';
+        }
+    }
+
+    private function tables_page_section_compare(int $subject_id, int $field_id)
+    {
+        // todo get sql to get the compare table
+        echo '<section class="ruigehond014_rows" data-table_name="compare">';
+        // todo
+        echo '</section>';
     }
 
     private function tables_page_section(string $table_short_name)
     {
         $where = '';
-        $type_id = (int)($_GET['type_id'] ?? 0);
-        if (0 === $type_id) {
-            if (isset($_GET['subject_id'])) {
-                $subject_id = (int)$_GET['subject_id'];
-                $type_id = $this->wpdb->get_var("SELECT type_id FROM $this->table_subject WHERE id = $subject_id;");
-            } elseif (isset($_GET['field_id'])) {
-                $field_id = (int)$_GET['field_id'];
-                $type_id = $this->wpdb->get_var("SELECT type_id FROM $this->table_field WHERE id = $field_id;");
-            }
-        }
+        $type_id = $this->table_ids['type'];
         switch ($table_short_name) {
             case 'subject':
             case 'field':
@@ -316,8 +340,6 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                     return;
                 }
                 break;
-            case 'compare':
-                //todo
         }
         $rows = $this->wpdb->get_results("SELECT * FROM $this->table_prefix$table_short_name $where ORDER BY o ASC;", OBJECT);
         echo '<section class="rows-sortable ruigehond014_rows" data-table_name="', $table_short_name, '">';
@@ -326,17 +348,27 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         }
         // new row
         echo '<div class="ruigehond014-order-row" data-id="0">';
-        echo '<textarea data-handle="update" data-table_name="', $table_short_name, '" data-type_id="', $type_id, '" data-column_name="title" class="ruigehond014 input title ajaxupdate tabbed"></textarea>';
+        echo '<textarea data-handle="update" data-table_name="';
+        echo $table_short_name;
+        echo '" data-type_id="';
+        echo $type_id;
+        echo '" data-column_name="title" class="ruigehond014 input title ajaxupdate tabbed"></textarea>';
         echo '</div>';
         echo '</section><hr/>';
     }
 
-    private function get_row_html($row, string $table_short_name, string $current_url): string
+    private function get_row_html(\stdClass $row, string $table_short_name, string $current_url): string
     {
         $html_title = htmlentities($row->title);
         $id = (int)$row->id;
+        $active_id = $this->table_ids[$table_short_name];
         ob_start();
-        echo '<div class="ruigehond014-order-row ', $table_short_name, '-row" data-id="';
+        echo '<div class="ruigehond014-order-row ';
+        echo "$table_short_name-row";
+        if ($id === $active_id) {
+            echo ' active';
+        }
+        echo '" data-id="';
         echo $id;
         //echo '" data-inferred_order="';
         //echo $row->o;
@@ -386,7 +418,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             $pos = strpos($current_url, "$key=");
             $current_url = substr($current_url, 0, $pos);
         }
-        return "$current_url&$key=$value"; // url qs always starts with ?page=compare-table
+        return "$current_url&$key=$value"; // current_url qs always starts with ?page=compare-table
     }
 
     public function settings_page()

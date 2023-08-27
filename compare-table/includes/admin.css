@@ -17,6 +17,16 @@
     cursor: grab;
 }
 
+/**
+ * rows
+ */
+.ruigehond014-order-row.active {
+    background-color: rgba(255, 255, 255, .24);
+}
+
+/**
+ * Modal and notices
+ */
 .ruigehond.modal.dialog,
 #RuigehondModal {
     position: fixed;
