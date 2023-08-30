@@ -290,21 +290,27 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         wp_localize_script('ruigehond014_admin_javascript', 'Ruigehond014_global', array(
             'nonce' => $ajax_nonce,
         ));
+        $filtered_get = (object)filter_input_array(INPUT_GET);
         $subject_id = 0;
         $field_id = 0;
+        $type_id = (int)($filtered_get->type_id ?? 0);
         $html_title = '';
-        if (isset($_GET['subject_id'])) {
-            $subject_id = (int)$_GET['subject_id'];
-            $row = $this->wpdb->get_row("SELECT type_id, title FROM $this->table_subject WHERE id = $subject_id;");
-            $type_id = (int)$row->type_id;
-            $html_title = htmlentities($row->title);
-        } elseif (isset($_GET['field_id'])) {
-            $field_id = (int)$_GET['field_id'];
-            $row = $this->wpdb->get_row("SELECT type_id, title FROM $this->table_field WHERE id = $field_id;");
-            $type_id = (int)$row->type_id;
-            $html_title = htmlentities($row->title);
-        } else {
-            $type_id = (int)($_GET['type_id'] ?? 0);
+        if (isset($filtered_get->subject_id)) {
+            $subject_id = (int)$filtered_get->subject_id;
+            if (($row = $this->wpdb->get_row("SELECT type_id, title FROM $this->table_subject WHERE id = $subject_id;"))) {
+                $type_id = (int)$row->type_id;
+                $html_title = htmlentities($row->title);
+            } else {
+                $subject_id = 0;
+            }
+        } elseif (isset($filtered_get->field_id)) {
+            $field_id = (int)$filtered_get->field_id;
+            if (($row = $this->wpdb->get_row("SELECT type_id, title FROM $this->table_field WHERE id = $field_id;"))) {
+                $type_id = (int)$row->type_id;
+                $html_title = htmlentities($row->title);
+            } else {
+                $field_id = 0;
+            }
         }
         $this->table_ids = array(
             'type' => $type_id,
@@ -324,7 +330,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         echo '</div>';
         // if a subject or field is selected, show the table that connects the fields + info box to that subject
         if ($subject_id + $field_id > 0) {
-            echo '<div id="ruigehond014-compare-overlay"><div class="wrap ruigehond014 compare">';
+            echo '<div id="ruigehond014-compare-overlay" class="close"><div class="wrap ruigehond014 compare">';
             echo '<button class="close" data-handle="close">X</button>';
             echo '<h2>', $html_title, '</h2>';
             $this->tables_page_section_compare($type_id, $subject_id, $field_id);
@@ -341,7 +347,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                     JOIN $this->table_subject s ON s.id = $subject_id
                     LEFT OUTER JOIN $this->table_compare c ON c.field_id = f.id AND c.subject_id = s.id
                 WHERE f.type_id = $type_id
-                ORDER BY s.o;
+                ORDER BY f.o;
             ", OBJECT);
         } elseif ($field_id > 0) {
             $rows = $this->wpdb->get_results("
@@ -350,7 +356,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                     JOIN $this->table_field f ON f.id = $field_id
                     LEFT OUTER JOIN $this->table_compare c ON c.subject_id = s.id AND c.field_id = f.id
                 WHERE s.type_id = $type_id
-                ORDER BY f.o;
+                ORDER BY s.o;
             ", OBJECT);
         } else {
             return;

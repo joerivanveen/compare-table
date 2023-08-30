@@ -74,9 +74,10 @@ function ruigehond014_setup() {
         });
         // activate close button
         let $close;
-        if (($close = $('#ruigehond014-compare-overlay .close')).length === 1) {
-            $close.on('click', function () {
-                $('#ruigehond014-compare-overlay').fadeOut(); // works because new overlay is on a new page load
+        if (($close = $('#ruigehond014-compare-overlay')).length === 1) {
+            $close.on('click', function (e) {
+                if (e.target.classList.contains('close'))
+                    $('#ruigehond014-compare-overlay').fadeOut(); // works because new overlay is on a new page load
             });
         }
 // okipokoi
