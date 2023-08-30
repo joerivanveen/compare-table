@@ -425,6 +425,14 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         }
         $rows = $this->wpdb->get_results("SELECT * FROM $this->table_prefix$table_short_name $where ORDER BY o;", OBJECT);
         echo '<section class="rows-sortable ruigehond014_rows" data-table_name="', $table_short_name, '">';
+        switch ($table_short_name) {
+            case 'subject':
+                echo '<h2>', __('Subject', 'compare-table'), '</h2>';
+                break;
+            case 'field':
+                echo '<h2>', __('Field', 'compare-table'), '</h2>';
+                break;
+        }
         foreach ($rows as $index => $row) {
             echo $this->get_row_html($row, $table_short_name, $this->admin_url);
         }

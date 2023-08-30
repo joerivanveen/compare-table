@@ -24,6 +24,29 @@
 /**
  * rows
  */
+.ruigehond014-row > * {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.ruigehond014-row > label {
+    cursor: inherit;
+    width: 120px;
+}
+
+.ruigehond014-delete > *,
+.ruigehond014-edit > * {
+    background: none!important;
+    border: none;
+    padding: 0!important;
+    /*optional*/
+    font-family: inherit;
+    /*input has OS specific font-family*/
+}
+.ruigehond014-delete > * {
+    color: rgb(200, 0, 0);
+}
+
 .ruigehond014-row.active {
     background-color: rgba(255, 255, 255, .24);
 }
