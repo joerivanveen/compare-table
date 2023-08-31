@@ -170,6 +170,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
                 if (isset($args['order']) and is_array($args['order'])) {
                     $rows = $args['order'];
                     foreach ($rows as $id => $o) {
+                        if (0 === $id) continue;
                         $this->upsertDb($table_name,
                             array('o' => $o),
                             array('id' => $id)
@@ -437,7 +438,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         }
         // new row
         echo '<div class="ruigehond014-row" data-id="0">';
-        echo '<div class="sortable-handle">::</div>';
+        echo '<div class="sortable-handle">::</div>'; // visibility set to hidden by css
         echo '<textarea data-handle="update" data-table_name="';
         echo $table_short_name;
         echo '" data-type_id="';
