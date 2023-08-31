@@ -361,7 +361,6 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         } else {
             return;
         }
-        echo '<!--', $this->wpdb->last_query, '-->'; // todo only for debugging
         echo '<section class="ruigehond014_rows" data-table_name="compare">';
         foreach ($rows as $index => $row) {
             $parent_name = $row->parent_name;
