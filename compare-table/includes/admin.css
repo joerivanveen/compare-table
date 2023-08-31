@@ -38,6 +38,7 @@
     width: 120px;
 }
 
+.ruigehond014 .close,
 .ruigehond014-delete > *,
 .ruigehond014-edit > * {
     background: rgba(0, 0, 0, .34);
@@ -60,6 +61,7 @@
 .ruigehond014-edit {
     margin: 2px;
 }
+
 .ruigehond014-edit > * {
     background-color: #2271b1; /* WordPress blue */
 }
