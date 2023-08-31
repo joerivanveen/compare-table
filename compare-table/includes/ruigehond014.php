@@ -436,7 +436,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
             echo $this->get_row_html($row, $table_short_name, $this->admin_url);
         }
         // new row
-        echo '<div class="ruigehond014-row orderable" data-id="0">';
+        echo '<div class="ruigehond014-row" data-id="0">';
+        echo '<div class="sortable-handle">::</div>';
         echo '<textarea data-handle="update" data-table_name="';
         echo $table_short_name;
         echo '" data-type_id="';
@@ -461,7 +462,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond
         //echo '" data-inferred_order="';
         //echo $row->o;
         echo '">';
-        echo '<div class="sortable-handle">sort handle</div>';
+        echo '<div class="sortable-handle">::</div>';
         echo '<textarea data-id="';
         echo $id;
         echo '" data-handle="update" data-table_name="';

@@ -3,9 +3,13 @@
     padding: .2em .5em;
 }
 
-.ruigehond014-order-term .sortable-handle {
+.ruigehond014-row.orderable .sortable-handle {
     cursor: grab;
-    display: inline-block;
+    padding: .2em .35em;
+}
+.ruigehond014-row:not(.orderable) .sortable-handle {
+    visibility: hidden;
+    padding: .2em .35em;
 }
 
 .ruigehond014-order-term input {
@@ -36,19 +40,42 @@
 
 .ruigehond014-delete > *,
 .ruigehond014-edit > * {
-    background: none!important;
+    background: rgba(0, 0, 0, .34);
+    color: rgb(255, 255, 255);
+    font-weight: normal;
     border: none;
-    padding: 0!important;
-    /*optional*/
-    font-family: inherit;
-    /*input has OS specific font-family*/
-}
-.ruigehond014-delete > * {
-    color: rgb(200, 0, 0);
+    padding: .2em .35em !important;
+    margin: 0;
+    font-family: inherit; /* optional, input has OS specific font-family */
+    cursor: pointer;
+    text-decoration: none;
+    box-sizing: border-box;
+    vertical-align: text-top;
 }
 
+.ruigehond014-delete > *:hover {
+    background: rgb(200, 0, 0);
+}
+
+.ruigehond014-edit {
+    margin: 2px;
+}
+.ruigehond014-edit > * {
+    background-color: #2271b1; /* WordPress blue */
+}
+
+.ruigehond014-edit > *:hover {
+    color: rgb(255, 255, 255);
+    background-color: #1e8cbe; /* WordPress blue hover */
+}
+
+.ruigehond014-row {
+    padding: 2px 0;
+    border-radius: 3px;
+    border: solid 1px rgba(0,0,0,0);
+}
 .ruigehond014-row.active {
-    background-color: rgba(255, 255, 255, .24);
+    border-color: rgba(0,0,0,.4);
 }
 
 .delete {
