@@ -1,0 +1,16 @@
+.wp-block-table {
+    overflow-x: auto;
+}
+
+.wp-block-table.ruigehond014 .description {
+    display: none;
+}
+
+.wp-block-table.ruigehond014 .cell {
+    width: 10%;
+}
+@media (max-width: 555px) {
+    .wp-block-table.ruigehond014 .cell {
+        min-width: calc(50vw - 3px);
+    }
+}

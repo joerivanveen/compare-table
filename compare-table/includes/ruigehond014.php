@@ -55,7 +55,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		} else {
 			wp_enqueue_script( 'ruigehond014_javascript', "{$plugin_dir_url}client.js", array( 'jquery' ), RUIGEHOND014_VERSION );
 			if ( $this->queue_frontend_css ) { // only output css when necessary
-				wp_enqueue_style( 'ruigehond014_stylesheet_display', "{$plugin_dir_url}display.css", [], RUIGEHOND014_VERSION );
+				wp_enqueue_style( 'ruigehond014_stylesheet_display', "{$plugin_dir_url}client.css", [], RUIGEHOND014_VERSION );
 			}
 			add_shortcode( 'compare-table', array( $this, 'handle_shortcode' ) );
 		}
@@ -96,14 +96,13 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		}
 		echo ' ORDER BY f.o, s.o;';
 		$sql           = ob_get_clean();
-		$subjects      = array();
 		$current_field = '';
 		$rows          = $this->wpdb->get_results( $sql );
 		// now for the actual output
 		ob_start();
-		echo '<figure class="wp-block-table"><table>';
+		echo '<figure class="wp-block-table ruigehond014"><table>';
 		// table heading, double row with selectors
-
+		//echo '<thead><tr><th class="cell empty"></th><th class="cell select">';
 		// contents of the table
 		echo '<tbody><tr>';
 		foreach ( $rows as $index => $row ) {
@@ -112,19 +111,17 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 					echo '</tr><tr>';
 				}
 				$current_field = $row->field_title;
-				echo '<td class="ruigehond014 cell field"';
+				echo '<td class="cell field">', $current_field;
 				if ( isset( $row->field_description ) && ( $description = $row->field_description ) ) {
-					echo ' data-description="';
-					echo str_replace( '"', '&quot;', htmlentities( $description ) );
+					echo '<div class="description">', htmlentities( $description ), '</div>';
 				}
-				echo '">', $current_field, '</td>';
+				echo '</td>';
 			}
-			echo '<td class="ruigehond014 cell compare"';
+			echo '<td class="cell compare">', $row->title;
 			if ( isset( $row->description ) && ( $description = $row->description ) ) {
-				echo ' data-description="';
-				echo str_replace( '"', '&quot;', htmlentities( $description ) );
+				echo '<div class="description">', htmlentities( $description ), '</div>';
 			}
-			echo '">', $row->title, '</td>';
+			echo '</td>';
 		}
 		echo '</tr></tbody>';
 		// end
@@ -389,7 +386,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		// if a subject or field is selected, show the table that connects the fields + info box to that subject
 		if ( $subject_id + $field_id > 0 ) {
 			echo '<div id="ruigehond014-compare-overlay" class="close"><div class="wrap ruigehond014 compare">';
-			echo '<button class="close" data-handle="close">X</button>';
+			echo '<button class="close" data-handle="close">×</button>';
 			echo '<h2>', $html_title, '</h2>';
 			$this->tables_page_section_compare( $type_id, $subject_id, $field_id );
 			echo '</div></div>';
