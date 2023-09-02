@@ -41,7 +41,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			// standard page url
 			$this->admin_url = admin_url( 'admin.php?page=compare-table' );
 			// regular
-			$this->load_translations( 'compare-table' );
+			$this->loadTranslations( 'compare-table' );
 			add_action( 'admin_init', array( $this, 'settings' ) );
 			add_action( 'admin_menu', array( $this, 'menu_item' ) );
 			// styles...
@@ -57,27 +57,78 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			if ( $this->queue_frontend_css ) { // only output css when necessary
 				wp_enqueue_style( 'ruigehond014_stylesheet_display', "{$plugin_dir_url}display.css", [], RUIGEHOND014_VERSION );
 			}
-			//add_action('wp_head', array($this, 'outputSchema'));
-			//add_shortcode('compare-table', array($this, 'getHtmlForFrontend'));
+			add_shortcode( 'compare-table', array( $this, 'handle_shortcode' ) );
 		}
 	}
 
 	public function settings_link( $links ) {
 		$link_text = __( 'Tables', 'compare-table' );
-		$link      = "<a href=\"$this->admin_url\">$link_text</a>";
+		$link      = "<a href='$this->admin_url'>$link_text</a>";
 		array_unshift( $links, $link );
 
 		return $links;
 	}
 
-	public function getHtmlForFrontend( $attributes = [], $content = null, $short_code = 'compare-table' ) {
-		if ( ( ! $post_id = get_the_ID() ) ) {
+	public function handle_shortcode( $attributes = [], $content = null, $short_code = 'compare-table' ) {
+		if ( ( false === get_the_ID() ) ) {
 			return '';
 		}
-		$chosen_exclusive = isset( $attributes['exclusive'] ) ? $attributes['exclusive'] : null;
-		$chosen_term      = isset( $attributes['category'] ) ? strtolower( $attributes['category'] ) : null;
+		// build sql statement to get all relevant data
 		ob_start();
-		echo ' TEST compare table ';
+		echo "SELECT c.*, t.title type, 
+       		s.title subject_title, s.description subject_description, 
+       		f.title field_title, f.description field_description
+       		FROM $this->table_compare c
+ 			INNER JOIN $this->table_subject s ON s.id = c.subject_id
+     		INNER JOIN $this->table_field f ON f.id = c.field_id
+     		INNER JOIN $this->table_type t ON t.id = f.type_id AND t.id = s.type_id ";
+		if ( isset( $attributes['type'] ) && ( $type = $attributes['type'] ) ) {
+			if ( 0 !== (int) $type ) {
+				echo 'WHERE t.id = ';
+				echo (int) $type;
+			} else {
+				echo 'WHERE t.title = \'';
+				echo addslashes( $type );
+				echo '\'';
+			}
+		} else {
+			echo "WHERE t.id = (SELECT id FROM $this->table_type ORDER BY o LIMIT 1)";
+		}
+		echo ' ORDER BY f.o, s.o;';
+		$sql           = ob_get_clean();
+		$subjects      = array();
+		$current_field = '';
+		$rows          = $this->wpdb->get_results( $sql );
+		// now for the actual output
+		ob_start();
+		echo '<figure class="wp-block-table"><table>';
+		// table heading, double row with selectors
+
+		// contents of the table
+		echo '<tbody><tr>';
+		foreach ( $rows as $index => $row ) {
+			if ( $row->field_title !== $current_field ) {
+				if ( '' !== $current_field ) {
+					echo '</tr><tr>';
+				}
+				$current_field = $row->field_title;
+				echo '<td class="ruigehond014 cell field"';
+				if ( isset( $row->field_description ) && ( $description = $row->field_description ) ) {
+					echo ' data-description="';
+					echo str_replace( '"', '&quot;', htmlentities( $description ) );
+				}
+				echo '">', $current_field, '</td>';
+			}
+			echo '<td class="ruigehond014 cell compare"';
+			if ( isset( $row->description ) && ( $description = $row->description ) ) {
+				echo ' data-description="';
+				echo str_replace( '"', '&quot;', htmlentities( $description ) );
+			}
+			echo '">', $row->title, '</td>';
+		}
+		echo '</tr></tbody>';
+		// end
+		echo '</table></figure>';
 
 		return ob_get_clean();
 	}
@@ -405,7 +456,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			}
 			echo '<div class="ruigehond014-delete"><input type="button" data-handle="delete_permanently" data-table_name="compare"';
 			if ( null !== $id ) {
-				echo " data-id=\"$id\"";
+				echo " data-id='$id'";
 			}
 			echo ' class="delete ruigehond014 ajaxupdate" value="CLEAR"/></div>';
 			echo '</div>';

@@ -47,7 +47,10 @@ namespace ruigehond_0_4_0 {
 		 */
 		public function __shutdown() {
 			// save the options when changed
-			if ( isset( $this->options ) and $this->options_checksum !== md5( json_encode( $this->options ) ) ) {
+			if (
+				isset( $this->options )
+				&& $this->options_checksum !== md5( json_encode( $this->options ) )
+			) {
 				update_option( $this->identifier, $this->options );
 			}
 		}
@@ -111,12 +114,12 @@ namespace ruigehond_0_4_0 {
 		 * NOTE relies on the fact that plugin slug is also the text domain
 		 * and the .mo files must be in /languages subfolder
 		 *
-		 * @param $text_domain string the text domain, which is also the plugin slug as per the rules of Wordpress
+		 * @param $text_domain string the text domain, which is also the plugin slug as per the rules of WordPress
 		 *
 		 * @since 0.3.1 added correct plugin domain and directory separator, deprecated old version
 		 */
-		public function load_translations( string $text_domain ) {
-			$path = $text_domain . DIRECTORY_SEPARATOR . 'languages' . DIRECTORY_SEPARATOR;
+		public function loadTranslations( string $text_domain ) {
+			$path = "$text_domain/languages/";
 			load_plugin_textdomain( $text_domain, false, $path );
 		}
 
