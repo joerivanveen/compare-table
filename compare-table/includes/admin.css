@@ -1,20 +1,25 @@
-.ruigehond014-order-term {
-    font-size: 125%;
-    padding: .2em .5em;
+/**
+ * rows
+ */
+
+.ruigehond014-row {
+    position: relative;
+    padding: .1rem .31rem;
+    border-radius: 3px;
+    border: solid 1px rgba(0, 0, 0, 0);
 }
 
-.ruigehond014-row.orderable .sortable-handle {
-    cursor: grab;
-    padding: .2em .35em;
+.ruigehond014-row.active {
+    border-color: rgba(0, 0, 0, .4);
 }
+
+.ruigehond014-row .sortable-handle {
+    cursor: grab;
+    padding: .23rem;
+}
+
 .ruigehond014-row:not(.orderable) .sortable-handle {
     visibility: hidden;
-    padding: .2em .35em;
-}
-
-.ruigehond014-order-term input {
-    width: 242px;
-    margin-right: 4px;
 }
 
 .ruigehond014 .unsaved {
@@ -25,12 +30,9 @@
     cursor: grab;
 }
 
-/**
- * rows
- */
 .ruigehond014-row > * {
     display: inline-block;
-    vertical-align: top;
+    vertical-align: middle;
 }
 
 .ruigehond014-row > label {
@@ -38,6 +40,7 @@
     width: 120px;
 }
 
+/* buttons */
 .ruigehond014 .close,
 .ruigehond014-delete > *,
 .ruigehond014-edit > * {
@@ -46,38 +49,25 @@
     font-weight: normal;
     border: none;
     padding: .2em .35em !important;
-    margin: 0;
+    margin: 0 0 0 .13em;
     font-family: inherit; /* optional, input has OS specific font-family */
     cursor: pointer;
     text-decoration: none;
     box-sizing: border-box;
-    vertical-align: text-top;
-}
-
-.ruigehond014-delete > *:hover {
-    background: rgb(200, 0, 0);
-}
-
-.ruigehond014-edit {
-    margin: 2px;
+    border-radius: 2px;
+    outline: 0;
+    font-size: .8rem;
+    line-height: 1rem;
 }
 
 .ruigehond014-edit > * {
     background-color: #2271b1; /* WordPress blue */
 }
 
+#ruigehond014-compare-overlay .close:hover,
 .ruigehond014-edit > *:hover {
     color: rgb(255, 255, 255);
     background-color: #1e8cbe; /* WordPress blue hover */
-}
-
-.ruigehond014-row {
-    padding: 2px 0;
-    border-radius: 3px;
-    border: solid 1px rgba(0,0,0,0);
-}
-.ruigehond014-row.active {
-    border-color: rgba(0,0,0,.4);
 }
 
 .delete {
@@ -86,6 +76,10 @@
 
 .delete[data-id] {
     display: inline-block;
+}
+
+.delete:hover {
+    background-color: rgb(200, 0, 0);
 }
 
 /**

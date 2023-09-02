@@ -434,7 +434,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		}
 		// new row
 		echo '<div class="ruigehond014-row" data-id="0">';
-		echo '<div class="sortable-handle">::</div>'; // visibility set to hidden by css
+		echo '<div class="sortable-handle">::</div>'; // visibility set to hidden by css, used for spacing
 		echo '<textarea data-handle="update" data-table_name="';
 		echo $table_short_name;
 		echo '" data-type_id="';
