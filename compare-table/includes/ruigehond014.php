@@ -130,65 +130,6 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		return ob_get_clean();
 	}
 
-	/**
-	 * @param string|null $exclusive
-	 * @param null $term
-	 *
-	 * @return array the rows from db as \stdClasses in an indexed array
-	 */
-	private function getPosts( $exclusive = null, $term = null ) {
-		$term_ids  = null; // we are going to collect all the term_ids that fall under the requested $term
-		$wp_prefix = $this->wpdb->prefix;
-		if ( is_string( $term ) ) {
-			$sql_term = addslashes( $term );
-			$sql      = "select term_id from {$wp_prefix}terms t where lower(t.name) = '$sql_term';";
-			// now for as long as rows with term_ids are returned, keep building the array
-			while ( $rows = $this->wpdb->get_results( $sql ) ) {
-				foreach ( $rows as $index => $row ) {
-					$term_ids[] = $row->term_id;
-				}
-				// new sql selects all the children from the term_ids that are in the array
-				$str_term_ids = implode( ',', $term_ids );
-				$sql          = "select term_id from {$wp_prefix}term_taxonomy tt 
-                        where tt.parent in ($str_term_ids) 
-                        and term_id not in ($str_term_ids);"; // excluding the term_ids already in the array
-				// so it returns no rows if there are no more children, ending the while loop
-			}
-		}
-		$sql = "select p.ID, p.post_title, p.post_content, p.post_date, p.post_name, t.term_id, pm.meta_value AS exclusive from
-                {$wp_prefix}posts p left outer join 
-                {$wp_prefix}term_relationships tr on tr.object_id = p.ID left outer join 
-                {$wp_prefix}term_taxonomy tt on tt.term_taxonomy_id = tr.term_taxonomy_id left outer join 
-                {$wp_prefix}terms t on t.term_id = tt.term_id left outer join 
-                {$wp_prefix}postmeta pm on pm.post_id = p.ID and pm.meta_key = '_ruigehond014_exclusive' 
-                where p.post_type = 'ruigehond014_faq' and post_status = 'publish'";
-		// setup the where condition regarding exclusive and term....
-		if ( is_array( $term_ids ) ) {
-			$sql .= ' and t.term_id IN (' . implode( ',', $term_ids ) . ')';
-		} elseif ( is_string( $exclusive ) ) {
-			$sql .= ' and pm.meta_value = \'' . addslashes( sanitize_text_field( $exclusive ) ) . '\'';
-		}
-		$sql        = "$sql order by p.post_date desc;";
-		$rows       = $this->wpdb->get_results( $sql, OBJECT );
-		$return_arr = array();
-		$current_id = 0;
-		foreach ( $rows as $index => $row ) {
-			if ( $row->ID === $current_id ) { // add the category to the current return value
-				$return_arr[ count( $return_arr ) - 1 ]->term_ids[] = $row->term_id;
-			} else { // add the row, when not exclusive is requested posts without terms must be filtered out
-				if ( ( $term_id = $row->term_id ) or $exclusive ) {
-					$row->term_ids = array( $term_id );
-					unset( $row->term_id );
-					$return_arr[] = $row;
-					$current_id   = $row->ID;
-				}
-			}
-		}
-		unset( $rows );
-
-		return $return_arr;
-	}
-
 	public function handle_input( array $args ): ruigehond_0_4_0\returnObject {
 		check_ajax_referer( 'ruigehond014_nonce', 'nonce' );
 		if ( false === current_user_can( 'edit_posts' ) || ! is_admin() ) {
@@ -297,23 +238,23 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 					}
 				}
 				// do the upsert
-				$upsertedRows = 0;
+				$upserted_rows = 0;
 				switch ( $column_name ) {
 					case 'title':
 					case 'description':
-						$upsertedRows = $this->upsertDb( $table_name, array( $column_name => $value ), $where );
+						$upserted_rows = $this->upsertDb( $table_name, array( $column_name => $value ), $where );
 						break;
 					default:
 						$returnObject->add_message( sprintf( __( 'No such column %s', 'compare-table' ),
 							var_export( $column_name, true ) ), 'error' );
 				}
 				// report the upsert
-				if ( 0 === $upsertedRows ) {
+				if ( 0 === $upserted_rows ) {
 					$returnObject->add_message( __( 'Not updated', 'compare-table' ), 'warn' );
 				} else {
 					$returnObject->set_success( true );
-					if ( 0 < $upsertedRows ) { // this was an insert
-						$id         = $upsertedRows;
+					if ( 0 < $upserted_rows ) { // this was an insert
+						$id         = $upserted_rows;
 						$args['id'] = $id;
 						if ( 'compare' !== $short_table_name ) {
 							// also set the order so it appears at the bottom
