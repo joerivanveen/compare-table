@@ -69,7 +69,7 @@ function ruigehond014_setup() {
             },
         });
         // enhance the input elements to Ruigehond014_input elements
-        $.each($('input[type="checkbox"].ruigehond014.ajaxupdate, input[type="text"].ruigehond014.ajaxupdate, textarea.ruigehond014.ajaxupdate, input[type="button"].ruigehond014.ajaxupdate'), function (key, value) {
+        $.each($('input.ruigehond014.ajaxupdate, textarea.ruigehond014.ajaxupdate'), function (key, value) {
             value.prototype = new Ruigehond014_input($, value);
         });
         // activate close button
@@ -80,7 +80,7 @@ function ruigehond014_setup() {
                     $('#ruigehond014-compare-overlay').fadeOut(); // works because new overlay is on a new page load
             });
         }
-// okipokoi
+    // okipokoi
     })(jQuery);
 }
 
@@ -103,13 +103,15 @@ function Ruigehond014_input($, HTMLElement) {
         });
     } else if (HTMLElement.type === 'checkbox') {
         this.$input.off('.ruigehond014').on('change.ruigehond014', function () {
-            console.error('doesn\'t work... value = ' + this.checked);
+            self.saveBooleanOption(this.checked);
         });
-    } else { // text or textarea
+    } else { // input or textarea
         this.$input.off('.ruigehond014').on('blur.ruigehond014', function (event) {
             self.save(event);
         }).on('keyup.ruigehond014', function (event) {
             self.typed(event);
+        }).on('mouseup.ruigehond014', function () {
+            self.checkChanged();
         }).on('keydown.ruigehond014', function (event) { // prevent form from submitting
             if (event.which === 13 && !event.shiftKey) {
                 return false; // jQuery way to stopPropagation and preventDefault at the same time.

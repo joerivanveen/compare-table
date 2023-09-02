@@ -27,10 +27,10 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 	}
 
 	public function initialize() {
-		if ( current_user_can( 'administrator' ) ) {
-			error_reporting( E_ALL );
-			ini_set( 'display_errors', '1' );
-		}
+//		if ( current_user_can( 'administrator' ) ) {
+//			error_reporting( E_ALL );
+//			ini_set( 'display_errors', '1' );
+//		}
 		$plugin_dir_url = plugin_dir_url( __FILE__ );
 		if ( is_admin() ) {
 			// settings used only for admin pages
@@ -242,6 +242,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 				switch ( $column_name ) {
 					case 'title':
 					case 'description':
+					case 'show_columns':
+					case 'list_alphabetically':
 						$upserted_rows = $this->upsertDb( $table_name, array( $column_name => $value ), $where );
 						break;
 					default:
@@ -465,7 +467,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		echo $table_short_name;
 		echo '" data-column_name="title" data-value="';
 		echo $html_title;
-		echo '"	class="ruigehond014 input title ajaxupdate tabbed"/>';
+		echo '"	class="ruigehond014 input title ajaxupdate tabbed">';
 		echo $html_title;
 		echo '</textarea>';
 		if ( property_exists( $row, 'description' ) ) {
@@ -483,6 +485,30 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			echo '"	class="ruigehond014 input description ajaxupdate tabbed">';
 			echo $html_description;
 			echo '</textarea>';
+		}
+		if ( property_exists( $row, 'show_columns' ) ) {
+			echo '<input type="number" data-id="';
+			echo $id;
+			echo '" data-handle="update" data-table_name="';
+			echo $table_short_name;
+			echo '" data-column_name="show_columns" data-value="';
+			echo (int) $row->show_columns;
+			echo '" value="';
+			echo (int) $row->show_columns;
+			echo '"	class="ruigehond014 input number ajaxupdate tabbed" min="1"/>';
+		}
+		if ( property_exists( $row, 'list_alphabetically' ) ) {
+			echo '<input type="checkbox" data-id="';
+			echo $id;
+			echo '" data-handle="update" data-table_name="';
+			echo $table_short_name;
+			echo '" data-column_name="list_alphabetically" ';
+			if ( 0 === (int) $row->list_alphabetically ) {
+				echo 'data-checked=false';
+			} else {
+				echo 'checked="checked" data-checked=true';
+			}
+			echo ' class="ruigehond014 input checkbox ajaxupdate tabbed"/>';
 		}
 		echo '<div class="ruigehond014-edit"><a href="';
 		echo $this->add_query_to_url( $current_url, "{$table_short_name}_id", urlencode( (string) $id ) );
@@ -642,6 +668,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			$sql = "CREATE TABLE $this->table_type (
 						id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 						title text CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL,
+						show_columns int NOT NULL DEFAULT 2,
+						list_alphabetically int NOT NULL DEFAULT 0,
 						o INT NOT NULL DEFAULT 1
                     );";
 			$this->wpdb->query( $sql );
