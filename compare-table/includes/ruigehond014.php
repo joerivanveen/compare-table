@@ -237,19 +237,24 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 							break;
 					}
 				}
-				// do the upsert
-				$upserted_rows = 0;
+				// validate input value
 				switch ( $column_name ) {
+					case 'list_alphabetically':
+						$value = '1' === $value ? 1 : 0;
+						break;
+					case 'show_columns':
+						$value = max( abs( (int) $value ), 1 );
+						break;
 					case 'title':
 					case 'description':
-					case 'show_columns':
-					case 'list_alphabetically':
-						$upserted_rows = $this->upsertDb( $table_name, array( $column_name => $value ), $where );
+						// any string is basically valid
 						break;
 					default:
 						$returnObject->add_message( sprintf( __( 'No such column %s', 'compare-table' ),
 							var_export( $column_name, true ) ), 'error' );
 				}
+				// do the upsert
+				$upserted_rows = $this->upsertDb( $table_name, array( $column_name => $value ), $where );
 				// report the upsert
 				if ( 0 === $upserted_rows ) {
 					$returnObject->add_message( __( 'Not updated', 'compare-table' ), 'warn' );
@@ -487,7 +492,9 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			echo '</textarea>';
 		}
 		if ( property_exists( $row, 'show_columns' ) ) {
-			echo '<input type="number" data-id="';
+			echo '<input type="number" title="';
+			echo __( 'Number of columns to show initially.', 'compare-table' );
+			echo '" data-id="';
 			echo $id;
 			echo '" data-handle="update" data-table_name="';
 			echo $table_short_name;
@@ -498,7 +505,9 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			echo '"	class="ruigehond014 input number ajaxupdate tabbed" min="1"/>';
 		}
 		if ( property_exists( $row, 'list_alphabetically' ) ) {
-			echo '<input type="checkbox" data-id="';
+			echo '<input type="checkbox" title="';
+			echo __( 'List alphabetically.', 'compare-table' );
+			echo '" data-id="';
 			echo $id;
 			echo '" data-handle="update" data-table_name="';
 			echo $table_short_name;
