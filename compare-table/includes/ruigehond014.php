@@ -75,7 +75,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		}
 		// build sql statement to get all relevant data
 		ob_start();
-		echo "SELECT c.*, t.title type, 
+		echo "SELECT c.*, t.show_columns, t.list_alphabetically, 
        		s.title subject_title, s.description subject_description, 
        		f.title field_title, f.description field_description
        		FROM $this->table_compare c
@@ -95,14 +95,37 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			echo "WHERE t.id = (SELECT id FROM $this->table_type ORDER BY o LIMIT 1)";
 		}
 		echo ' ORDER BY f.o, s.o;';
-		$sql           = ob_get_clean();
-		$current_field = '';
-		$rows          = $this->wpdb->get_results( $sql );
+		$sql  = ob_get_clean();
+		$rows = $this->wpdb->get_results( $sql );
+		if ( 0 === count( $rows ) ) {
+			ob_start();
+			echo '<p>';
+			echo sprintf(
+				__( 'Nothing found for table ‘%s’.', 'compare-table' ),
+				htmlentities( var_export( $attributes, true ) )
+			);
+			echo '</p>';
+
+			return ob_get_clean();
+		}
 		// now for the actual output
+		$row                 = $rows[0];
+		$current_field       = '';
+		$list_alphabetically = 1 === $row->list_alphabetically;
+		$show_columns        = $row->show_columns;
+		$count_columns       = 1;
 		ob_start();
 		echo '<figure class="wp-block-table ruigehond014"><table>';
 		// table heading, double row with selectors
-		//echo '<thead><tr><th class="cell empty"></th><th class="cell select">';
+		echo '<thead><tr><th class="cell empty"></th>';
+		for ( $i = 0; $i < $show_columns; ++ $i ) {
+			echo '<th class="cell select">SELECT ', $i, '</th>';
+		}
+		echo '</tr><tr><th class="cell empty"></th>';
+		for ( $i = 0; $i < $show_columns; ++ $i ) {
+			echo '<th class="cell select">TITLE ', $i, '</th>';
+		}
+		echo '</tr></thead>';
 		// contents of the table
 		echo '<tbody><tr>';
 		foreach ( $rows as $index => $row ) {
@@ -111,11 +134,17 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 					echo '</tr><tr>';
 				}
 				$current_field = $row->field_title;
+				$count_columns = 1;
 				echo '<td class="cell field">', $current_field;
 				if ( isset( $row->field_description ) && ( $description = $row->field_description ) ) {
 					echo '<div class="description">', htmlentities( $description ), '</div>';
 				}
 				echo '</td>';
+			} else {
+				++ $count_columns;
+			}
+			if ( $show_columns < $count_columns ) {
+				continue;
 			}
 			echo '<td class="cell compare">', $row->title;
 			if ( isset( $row->description ) && ( $description = $row->description ) ) {
