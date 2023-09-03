@@ -163,11 +163,11 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 				echo '</td>';
 			}
 			while ( $count_columns < $show_columns && $show_subjects[ $count_columns ] !== $row->subject_title ) {
-				++ $count_columns;
 				echo '<td class="cell empty">&nbsp;-</td>';
-			}
-			if ( $count_columns >= $show_columns ) {
-				continue;
+				++ $count_columns;
+				if ( $count_columns === $show_columns ) {
+					continue 2;
+				}
 			}
 			echo '<td class="cell compare">', $row->title;
 			if ( isset( $row->description ) && ( $description = $row->description ) ) {
