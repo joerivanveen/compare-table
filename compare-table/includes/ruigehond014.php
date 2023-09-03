@@ -152,6 +152,12 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 				}
 			} else {
 				if ( '' !== $current_field ) {
+					// finish the row if necessary
+					while ( $count_columns < $show_columns - 1 ) {
+						echo '<td class="cell empty">&nbsp;-</td>';
+						++ $count_columns;
+					}
+					// new row
 					echo '</tr><tr>';
 				}
 				$current_field = $row->field_title;
@@ -175,6 +181,12 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			}
 			echo '</td>';
 		}
+		// finish the row if necessary
+		while ( $count_columns < $show_columns - 1 ) {
+			echo '<td class="cell empty">&nbsp;-</td>';
+			++ $count_columns;
+		}
+		// end the compare cells
 		echo '</tr></tbody>';
 		// end
 		echo '</table></figure>';
