@@ -76,7 +76,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		// build sql statement to get all relevant data
 		ob_start();
 		echo "SELECT c.*, t.show_columns, t.list_alphabetically, 
-       		s.title subject_title, s.description subject_description, 
+       		s.title subject_title, s.description subject_description, s.o subject_order,
        		f.title field_title, f.description field_description
        		FROM $this->table_compare c
  			INNER JOIN $this->table_subject s ON s.id = c.subject_id
@@ -101,7 +101,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			ob_start();
 			echo '<p>';
 			echo sprintf(
-				__( 'Nothing found for table ‘%s’.', 'compare-table' ),
+				__( 'Nothing found for table %s.', 'compare-table' ),
 				htmlentities( var_export( $attributes, true ) )
 			);
 			echo '</p>';
@@ -109,11 +109,27 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			return ob_get_clean();
 		}
 		// now for the actual output
-		$row                 = $rows[0];
-		$current_field       = '';
-		$list_alphabetically = 1 === $row->list_alphabetically;
-		$show_columns        = $row->show_columns;
-		$count_columns       = 1;
+		$row           = $rows[0];
+		$all_subjects  = array();
+		$show_subjects = array();
+		$current_field = '';
+		$alphabetical  = 1 === $row->list_alphabetically;
+		$show_columns  = $row->show_columns;
+		$count_columns = 0;
+		// select the first $show_columns subjects to display in the table
+		foreach ( $rows as $index => $row ) {
+			if ( false === isset( $all_subjects[ ( $o = (int) $row->subject_order ) ] ) ) {
+				$all_subjects[ $o ] = $row->subject_title;
+			}
+		}
+		ksort( $all_subjects ); // sort by original subject_order
+		$all_subjects = array_values( $all_subjects ); // reset keys
+		// NOTE: apparently 'min' returns a string here...
+		$show_columns = (int) min( count( $all_subjects ), $show_columns ); // do not exceed actual number of subjects
+		for ( $i = 0; $i < $show_columns; ++ $i ) {
+			$show_subjects[] = $all_subjects[ $i ];
+		}
+		// start output
 		ob_start();
 		echo '<figure class="wp-block-table ruigehond014"><table>';
 		// table heading, double row with selectors
@@ -123,27 +139,34 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		}
 		echo '</tr><tr><th class="cell empty"></th>';
 		for ( $i = 0; $i < $show_columns; ++ $i ) {
-			echo '<th class="cell select">TITLE ', $i, '</th>';
+			echo '<th class="cell select">', $show_subjects[ $i ], '</th>';
 		}
 		echo '</tr></thead>';
 		// contents of the table
 		echo '<tbody><tr>';
 		foreach ( $rows as $index => $row ) {
-			if ( $row->field_title !== $current_field ) {
+			if ( $row->field_title === $current_field ) {
+				++ $count_columns;
+				if ( $count_columns >= $show_columns ) {
+					continue;
+				}
+			} else {
 				if ( '' !== $current_field ) {
 					echo '</tr><tr>';
 				}
 				$current_field = $row->field_title;
-				$count_columns = 1;
+				$count_columns = 0;
 				echo '<td class="cell field">', $current_field;
 				if ( isset( $row->field_description ) && ( $description = $row->field_description ) ) {
 					echo '<div class="description">', htmlentities( $description ), '</div>';
 				}
 				echo '</td>';
-			} else {
-				++ $count_columns;
 			}
-			if ( $show_columns < $count_columns ) {
+			while ( $count_columns < $show_columns && $show_subjects[ $count_columns ] !== $row->subject_title ) {
+				++ $count_columns;
+				echo '<td class="cell empty">&nbsp;-</td>';
+			}
+			if ( $count_columns >= $show_columns ) {
 				continue;
 			}
 			echo '<td class="cell compare">', $row->title;
