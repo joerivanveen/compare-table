@@ -8,7 +8,8 @@ use ruigehond_0_4_0;
 
 class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 	// variables that hold cached items
-	private $database_version, $basename, $admin_url, $queue_frontend_css, $remove_on_uninstall;
+	private $database_version, $basename, $admin_url;
+	private $queue_frontend_css, $empty_cell_contents, $remove_on_uninstall;
 	private $table_prefix, $table_type, $table_subject, $table_field, $table_compare;
 	private $table_ids;
 
@@ -23,7 +24,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		$this->table_field   = "{$wp_prefix}ruigehond014_field";
 		$this->table_compare = "{$wp_prefix}ruigehond014_compare";
 		// settings used in front facing part of plugin
-		$this->queue_frontend_css = $this->getOption( 'queue_frontend_css', true );
+		$this->queue_frontend_css  = $this->getOption( 'queue_frontend_css', true );
+		$this->empty_cell_contents = $this->getOption( 'empty_cell_contents', '-' );
 	}
 
 	public function initialize() {
@@ -108,6 +110,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 
 			return ob_get_clean();
 		}
+		$empty_cell = "<td class='cell empty'>{$this->empty_cell_contents}</td>";
 		// now for the actual output
 		$row           = $rows[0];
 		$all_subjects  = array();
@@ -154,7 +157,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 				if ( '' !== $current_field ) {
 					// finish the row if necessary
 					while ( $count_columns < $show_columns - 1 ) {
-						echo '<td class="cell empty">&nbsp;-</td>';
+						echo $empty_cell;
 						++ $count_columns;
 					}
 					// new row
@@ -169,7 +172,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 				echo '</td>';
 			}
 			while ( $count_columns < $show_columns && $show_subjects[ $count_columns ] !== $row->subject_title ) {
-				echo '<td class="cell empty">&nbsp;-</td>';
+				echo $empty_cell;
 				++ $count_columns;
 				if ( $count_columns === $show_columns ) {
 					continue 2;
@@ -183,7 +186,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		}
 		// finish the row if necessary
 		while ( $count_columns < $show_columns - 1 ) {
-			echo '<td class="cell empty">&nbsp;-</td>';
+			echo $empty_cell;
 			++ $count_columns;
 		}
 		// end the compare cells
@@ -646,6 +649,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		$labels = array(
 			'remove_on_uninstall' => __( 'Check this if you want to remove all data when uninstalling the plugin.', 'compare-table' ),
 			'queue_frontend_css'  => __( 'By default a small css-file is output to the frontend to format the entries. Uncheck to handle the css yourself.', 'faq-with-categories' ),
+			'empty_cell_contents' => __('Type the default contents for empty cells in the table', 'compare-table'),
 		);
 		foreach ( $labels as $setting_name => $explanation ) {
 			add_settings_field(
