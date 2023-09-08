@@ -132,13 +132,22 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		for ( $i = 0; $i < $show_columns; ++ $i ) {
 			$show_subjects[] = $all_subjects[ $i ];
 		}
+		// build data object for frontend javascript
+		$data = array(
+			'show_columns'  => $show_columns,
+			'show_subjects' => $show_subjects,
+			'alphabetical'  => $alphabetical,
+			'rows'          => $rows,
+		);
 		// start output
 		ob_start();
-		echo '<figure class="wp-block-table ruigehond014"><table>';
+		echo '<figure class="wp-block-table ruigehond014"><table data-ruigehond014="';
+		echo json_encode( $data, JSON_HEX_QUOT );
+		echo '">';
 		// table heading, double row with selectors
-		echo '<thead><tr><th class="cell empty"></th>';
+		echo '<thead><tr><th class="cell empty">&nbsp;</th>';
 		for ( $i = 0; $i < $show_columns; ++ $i ) {
-			echo '<th class="cell select">SELECT ', $i, '</th>';
+			echo '<th class="cell select index', $i, '"></th>';
 		}
 		echo '</tr><tr><th class="cell empty"></th>';
 		for ( $i = 0; $i < $show_columns; ++ $i ) {
@@ -649,7 +658,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		$labels = array(
 			'remove_on_uninstall' => __( 'Check this if you want to remove all data when uninstalling the plugin.', 'compare-table' ),
 			'queue_frontend_css'  => __( 'By default a small css-file is output to the frontend to format the entries. Uncheck to handle the css yourself.', 'faq-with-categories' ),
-			'empty_cell_contents' => __('Type the default contents for empty cells in the table', 'compare-table'),
+			'empty_cell_contents' => __( 'Type the default contents for empty cells in the table', 'compare-table' ),
 		);
 		foreach ( $labels as $setting_name => $explanation ) {
 			add_settings_field(
