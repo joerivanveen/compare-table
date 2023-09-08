@@ -3,7 +3,20 @@
 }
 
 .wp-block-table.ruigehond014 .description {
-    display: none;
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    overflow: clip;
+    background-color: rgb(240, 240, 240);
+    padding: 3px;
+    transition: opacity .5s ease-in-out;
+}
+
+.wp-block-table.ruigehond014 .description.active {
+    width: auto;
+    height: auto;
+    opacity: 1;
 }
 
 .wp-block-table.ruigehond014 .cell {

@@ -116,7 +116,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		$all_subjects  = array();
 		$show_subjects = array();
 		$current_field = '';
-		$alphabetical  = 1 === $row->list_alphabetically;
+		$alphabetical  = '1' === $row->list_alphabetically;
 		$show_columns  = $row->show_columns;
 		$count_columns = 0;
 		// select the first $show_columns subjects to display in the table
@@ -134,15 +134,15 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		}
 		// build data object for frontend javascript
 		$data = array(
-			'show_columns'  => $show_columns,
-			'show_subjects' => $show_subjects,
-			'alphabetical'  => $alphabetical,
-			'rows'          => $rows,
+			'show_columns' => $show_columns,
+			'subjects'     => $all_subjects,
+			'alphabetical' => $alphabetical,
+			'rows'         => $rows,
 		);
 		// start output
 		ob_start();
 		echo '<figure class="wp-block-table ruigehond014"><table data-ruigehond014="';
-		echo json_encode( $data, JSON_HEX_QUOT );
+		echo str_replace( '"', '&quot;', json_encode( $data, JSON_HEX_QUOT ) );
 		echo '">';
 		// table heading, double row with selectors
 		echo '<thead><tr><th class="cell empty">&nbsp;</th>';
@@ -151,7 +151,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		}
 		echo '</tr><tr><th class="cell empty"></th>';
 		for ( $i = 0; $i < $show_columns; ++ $i ) {
-			echo '<th class="cell select">', $show_subjects[ $i ], '</th>';
+			echo '<th class="cell heading">', $show_subjects[ $i ], '</th>';
 		}
 		echo '</tr></thead>';
 		// contents of the table
@@ -174,11 +174,11 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 				}
 				$current_field = $row->field_title;
 				$count_columns = 0;
-				echo '<td class="cell field">', $current_field;
+				echo '<td class="cell field">';
 				if ( isset( $row->field_description ) && ( $description = $row->field_description ) ) {
 					echo '<div class="description">', htmlentities( $description ), '</div>';
 				}
-				echo '</td>';
+				echo $current_field, '</td>';
 			}
 			while ( $count_columns < $show_columns && $show_subjects[ $count_columns ] !== $row->subject_title ) {
 				echo $empty_cell;
@@ -187,11 +187,11 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 					continue 2;
 				}
 			}
-			echo '<td class="cell compare">', $row->title;
+			echo '<td class="cell compare">';
 			if ( isset( $row->description ) && ( $description = $row->description ) ) {
 				echo '<div class="description">', htmlentities( $description ), '</div>';
 			}
-			echo '</td>';
+			echo $row->title, '</td>';
 		}
 		// finish the row if necessary
 		while ( $count_columns < $show_columns - 1 ) {
