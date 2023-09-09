@@ -130,13 +130,20 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		// NOTE: apparently 'min' returns a string here...
 		$show_columns = (int) min( count( $all_subjects ), $show_columns ); // do not exceed actual number of subjects
 		for ( $i = 0; $i < $show_columns; ++ $i ) {
-			$show_subjects[] = $all_subjects[ $i ];
+			if (
+				isset( $_GET["compare-table-column-$i"] )
+				&& in_array( ( $get_subject = $_GET["compare-table-column-$i"] ), $all_subjects )
+			) {
+				$show_subjects[] = $get_subject;
+			} else {
+				$show_subjects[] = $all_subjects[ $i ];
+			}
 		}
 		// build data object for frontend javascript
 		$data = array(
 			'show_columns'  => $show_columns,
 			'show_subjects' => $show_subjects,
-			'subjects'      => $all_subjects,
+			'all_subjects'  => $all_subjects,
 			'alphabetical'  => $alphabetical,
 			'rows'          => $rows,
 		);
