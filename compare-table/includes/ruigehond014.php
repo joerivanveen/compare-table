@@ -175,7 +175,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		echo '<figure class="wp-block-table ruigehond014"><table data-ruigehond014="';
 		echo str_replace( '"', '&quot;', json_encode( $data, JSON_HEX_QUOT ) );
 		echo '" id="compare-table-';
-		echo str_replace(' ', '-', $type_title);
+		echo str_replace(' ', '-', htmlentities($type_title));
 		echo '">';
 		// table heading, double row with selectors
 		echo '<thead><tr><th class="cell empty">&nbsp;</th>';
@@ -444,10 +444,11 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		// if a subject or field is selected, show the table that connects the fields + info box to that subject
 		if ( $subject_id + $field_id > 0 ) {
 			echo '<div id="ruigehond014-compare-overlay" class="close"><div class="wrap ruigehond014 compare">';
+			echo '<p class="spacer top">&nbsp;</p>';
 			echo '<button class="close" data-handle="close">×</button>';
 			echo '<h2>', $html_title, '</h2>';
 			$this->tables_page_section_compare( $type_id, $subject_id, $field_id );
-			echo '</div></div>';
+			echo '<p class="spacer bottom">&nbsp;</p></div></div>';
 		}
 	}
 
@@ -541,16 +542,20 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		switch ( $table_short_name ) {
 			case 'subject':
 				echo '<h2>', __( 'Subject', 'compare-table' ), '</h2>';
+				echo '<div class="ruigehond014-row header-row"><span>Title</span><span>Description</span></div>';
 				break;
 			case 'field':
 				echo '<h2>', __( 'Field', 'compare-table' ), '</h2>';
+				echo '<div class="ruigehond014-row header-row"><span>Title</span><span>Description</span></div>';
 				break;
+			case 'type':
+				echo '<div class="ruigehond014-row header-row"><span>Title</span><span>Choose subject text</span></div>';
 		}
 		foreach ( $rows as $index => $row ) {
 			echo $this->get_row_html( $row, $table_short_name, $this->admin_url );
 		}
 		// new row
-		echo '<div class="ruigehond014-row" data-id="0">';
+		echo '<div class="ruigehond014-row new-row" data-id="0">';
 		echo '<div class="sortable-handle">::</div>'; // visibility set to hidden by css, used for spacing
 		echo '<textarea data-handle="update" data-table_name="';
 		echo $table_short_name;

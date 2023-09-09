@@ -16,13 +16,13 @@ function ruigehond014_setup() {
                     dropped_id = ui.draggable[0].getAttribute('data-id'),
                     children = target.childNodes,
                     order = {};
-                let row, i, data;
+                let row, i, len, data;
                 // disable further ordering until return
                 $(target).sortable('disable');
                 $('.sortable-handle').addClass('disabled');
                 $(ui.draggable).addClass('unsaved');
                 // get the new order to send to the server for update
-                for (i = 0; i < children.length; ++i) {
+                for (i = 0, len = children.length; i < len; ++i) {
                     row = children[i];
                     // apparently jquery ui drops a shadowcopy or something which doesn't contain anything useful
                     // and it keeps the original in the DOM, maybe there's a later event that has rearranged everything

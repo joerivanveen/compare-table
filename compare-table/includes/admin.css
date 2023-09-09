@@ -40,6 +40,11 @@
     width: 120px;
 }
 
+.ruigehond014-row.header-row span {
+    width: 162px;
+    margin: -3px 0 0 30px;
+}
+
 /* buttons */
 .ruigehond014 .close,
 .ruigehond014-delete > *,
@@ -94,11 +99,11 @@
  * compare panel
  */
 #ruigehond014-compare-overlay {
-    position: absolute;
+    position: fixed;
     background-color: rgba(240, 240, 240, .8);
     left: 0;
     top: 0;
-    height: 100vh;
+    height: 100%;
     width: 100%;
 }
 
