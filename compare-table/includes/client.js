@@ -18,6 +18,10 @@ function ruigehond014_compare_tables() {
                 return;
             }
         }
+        /* order subjects if necessary */
+        if (table_data.alphabetical) {
+            table_data.all_subjects.sort();
+        }
         /* cross-hair on hover functionality */
         const do_cross_hair = function (td) {
             if (!td) { /* remove all cross-hairs */

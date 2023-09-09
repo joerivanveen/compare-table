@@ -97,12 +97,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		$all_subjects  = array();
 		$show_subjects = array();
 		foreach ( $rows as $index => $row ) {
-			if ( false === isset( $all_subjects[ ( $o = (int) $row->subject_order ) ] ) ) {
-				$all_subjects[ $o ] = $row->subject_title;
-			}
+			$all_subjects[] = $row->subject_title;
 		}
-		ksort( $all_subjects ); // sort by original subject_order
-		$all_subjects = array_values( $all_subjects ); // reset keys
 		// NOTE: apparently 'min' returns a string here...
 		$show_columns = (int) min( count( $all_subjects ), $show_columns ); // do not exceed actual number of subjects
 		for ( $i = 0; $i < $show_columns; ++ $i ) {
@@ -175,7 +171,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		echo '<figure class="wp-block-table ruigehond014"><table data-ruigehond014="';
 		echo str_replace( '"', '&quot;', json_encode( $data, JSON_HEX_QUOT ) );
 		echo '" id="compare-table-';
-		echo str_replace(' ', '-', htmlentities($type_title));
+		echo str_replace( ' ', '-', htmlentities( $type_title ) );
 		echo '">';
 		// table heading, double row with selectors
 		echo '<thead><tr><th class="cell empty">&nbsp;</th>';
