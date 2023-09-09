@@ -6,11 +6,11 @@ function ruigehond014_compare_tables() {
         console.warn(table_data);
         /* validate table data first */
         for (let prop in {
+            'type_title': 1,
             'show_columns': 1,
             'show_subjects': 1,
             'all_subjects': 1,
             'alphabetical': 1,
-            'rows': 1,
             'choose_subject': 1
         }) {
             if (!table_data.hasOwnProperty(prop)) {
@@ -125,7 +125,8 @@ function ruigehond014_selector(table_element, table_data, column_index) {
 }
 
 ruigehond014_selector.prototype.select = function (subject) {
-    const parts = window.location.href.split('?');
+    const href = window.location.href.split('#')[0];
+    const parts = href.split('?');
     if (parts.length > 1) {
         const params = parts[1].split('&');
         const len = params.length;
@@ -143,7 +144,7 @@ ruigehond014_selector.prototype.select = function (subject) {
     if (this.hasOwnProperty('table_element')) {
         this.table_element.classList.add('loading');
     }
-    window.location.href = parts.join('?');
+    window.location.href = parts.join('?') + '#'+ this.table_element.id;
 }
 
 /* only after everything is locked and loaded we’re initialising */

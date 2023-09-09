@@ -78,7 +78,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		// build sql statement to get the overall data
 		ob_start();
 		echo "SELECT DISTINCT t.show_columns, t.list_alphabetically, t.choose_subject,
-       		s.title subject_title, s.o subject_order 
+       		t.title type_title, s.title subject_title, s.o subject_order 
 			FROM $this->table_subject s 
     		INNER JOIN $this->table_type t ON t.id = s.type_id
 			ORDER BY s.o;";
@@ -92,6 +92,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		$show_columns   = $row->show_columns;
 		$alphabetical   = '1' === $row->list_alphabetically;
 		$choose_subject = $row->choose_subject;
+		$type_title     = $row->type_title;
 		// the actual sorting of the subjects:
 		$all_subjects  = array();
 		$show_subjects = array();
@@ -114,7 +115,11 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 				$show_subjects[] = $all_subjects[ $i ];
 			}
 		}
-		$like_subjects = "'" . implode( "','", $show_subjects ) . "'";
+		$like_subjects = implode( ',', array_map( function ( $subject ) {
+			$subject = addslashes( $subject );
+
+			return "'$subject'";
+		}, $show_subjects ) );
 		// build sql statement to get all compare rows
 		ob_start();
 		echo "SELECT c.*, t.show_columns, t.list_alphabetically, t.choose_subject,
@@ -157,7 +162,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		$count_columns = 0;
 		// build data object for frontend javascript
 		$data = array(
-			'rows'           => $rows, // no longer necessary TODO: remove
+			//'rows'           => $rows,
+			'type_title'     => $type_title,
 			'show_columns'   => $show_columns,
 			'show_subjects'  => $show_subjects,
 			'all_subjects'   => $all_subjects,
@@ -168,6 +174,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		ob_start();
 		echo '<figure class="wp-block-table ruigehond014"><table data-ruigehond014="';
 		echo str_replace( '"', '&quot;', json_encode( $data, JSON_HEX_QUOT ) );
+		echo '" id="compare-table-';
+		echo str_replace(' ', '-', $type_title);
 		echo '">';
 		// table heading, double row with selectors
 		echo '<thead><tr><th class="cell empty">&nbsp;</th>';
