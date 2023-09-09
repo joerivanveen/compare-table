@@ -75,14 +75,33 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		if ( ( false === get_the_ID() ) ) {
 			return '';
 		}
+		// build where clause for type
+		ob_start();
+		if ( isset( $attributes['type'] ) && ( $type = $attributes['type'] ) ) {
+			if ( 0 !== (int) $type ) {
+				echo 'WHERE t.id = ';
+				echo (int) $type;
+			} else {
+				echo 'WHERE t.title = \'';
+				echo addslashes( $type );
+				echo '\'';
+			}
+		} else {
+			echo "WHERE t.id = (SELECT id FROM $this->table_type ORDER BY o LIMIT 1)";
+		}
+		$where_table = ob_get_clean();
 		// build sql statement to get the overall data
 		ob_start();
 		echo "SELECT DISTINCT t.show_columns, t.list_alphabetically, t.choose_subject,
        		t.title type_title, s.title subject_title, s.o subject_order 
 			FROM $this->table_subject s 
     		INNER JOIN $this->table_type t ON t.id = s.type_id
+			$where_table
 			ORDER BY s.o;";
-		$sql  = ob_get_clean();
+		$sql = ob_get_clean();
+		if ( WP_DEBUG ) {
+			echo "<!--\n$sql\n-->";
+		}
 		$rows = $this->wpdb->get_results( $sql );
 		if ( 0 === count( $rows ) ) {
 			return __( 'No data found', 'compare-table' );
@@ -125,21 +144,13 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
  			INNER JOIN $this->table_subject s ON s.id = c.subject_id
      		INNER JOIN $this->table_field f ON f.id = c.field_id
      		INNER JOIN $this->table_type t ON t.id = f.type_id AND t.id = s.type_id ";
-		if ( isset( $attributes['type'] ) && ( $type = $attributes['type'] ) ) {
-			if ( 0 !== (int) $type ) {
-				echo 'WHERE t.id = ';
-				echo (int) $type;
-			} else {
-				echo 'WHERE t.title = \'';
-				echo addslashes( $type );
-				echo '\'';
-			}
-		} else {
-			echo "WHERE t.id = (SELECT id FROM $this->table_type ORDER BY o LIMIT 1)";
-		}
+		echo $where_table;
 		echo " AND s.title IN ($like_subjects)";
 		echo " ORDER BY f.o, FIELD(s.title,$like_subjects);";
-		$sql  = ob_get_clean();
+		$sql = ob_get_clean();
+		if ( WP_DEBUG ) {
+			echo "<!--\n$sql\n-->";
+		}
 		$rows = $this->wpdb->get_results( $sql );
 		if ( 0 === count( $rows ) ) {
 			ob_start();

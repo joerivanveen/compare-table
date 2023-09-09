@@ -3,7 +3,6 @@ function ruigehond014_compare_tables() {
     const tables = document.querySelectorAll('[data-ruigehond014]');
     tables.forEach(function (table) {
         const table_data = JSON.parse(table.dataset.ruigehond014);
-        console.warn(table_data);
         /* validate table data first */
         for (let prop in {
             'type_title': 1,
@@ -104,8 +103,13 @@ function ruigehond014_selector(table_element, table_data, column_index) {
     const self = this;
     const subjects = table_data.all_subjects;
     const selected = table_data.show_subjects;
-    const el = document.createElement('select');
+    this.column_index = column_index;
     this.table_element = table_element;
+    if (subjects.length <= selected.length) {
+        this.el = document.createTextNode('');
+        return this;
+    }
+    const el = document.createElement('select');
     el.classList.add('ruigehond014-selector');
     const option = document.createElement('option');
     option.innerHTML = table_data.choose_subject;
@@ -124,7 +128,6 @@ function ruigehond014_selector(table_element, table_data, column_index) {
         self.select(this.options[this.selectedIndex].value);
     });
     this.el = el;
-    this.column_index = column_index;
     return this;
 }
 
