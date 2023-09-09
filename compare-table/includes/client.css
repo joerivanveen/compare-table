@@ -19,6 +19,14 @@
     opacity: 1;
 }
 
+/* cross hair */
+.wp-block-table.ruigehond014 .cross-haired {
+    background-color: rgb(240, 240, 240);
+}
+.wp-block-table.ruigehond014 .cross-haired .cross-haired {
+    background-color: rgb(230, 230, 230);
+}
+
 .wp-block-table.ruigehond014 .cell {
     width: 10%;
 }

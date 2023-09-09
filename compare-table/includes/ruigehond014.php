@@ -110,7 +110,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 
 			return ob_get_clean();
 		}
-		$empty_cell = "<td class='cell empty'>{$this->empty_cell_contents}</td>";
+		$empty_cell = "<td class='cell compare empty'>{$this->empty_cell_contents}</td>";
 		// now for the actual output
 		$row           = $rows[0];
 		$all_subjects  = array();
