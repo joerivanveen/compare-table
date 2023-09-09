@@ -3,6 +3,7 @@ function ruigehond014_compare_tables() {
     const tables = document.querySelectorAll('[data-ruigehond014]');
     tables.forEach(function (table) {
         const table_data = JSON.parse(table.dataset.ruigehond014);
+        console.warn(table_data);
         /* validate table data first */
         for (let prop in {
             'show_columns': 1,

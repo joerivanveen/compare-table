@@ -75,7 +75,47 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		if ( ( false === get_the_ID() ) ) {
 			return '';
 		}
-		// build sql statement to get all relevant data
+		// build sql statement to get the overall data
+		ob_start();
+		echo "SELECT DISTINCT t.show_columns, t.list_alphabetically, t.choose_subject,
+       		s.title subject_title, s.o subject_order 
+			FROM $this->table_subject s 
+    		INNER JOIN $this->table_type t ON t.id = s.type_id
+			ORDER BY s.o;";
+		$sql  = ob_get_clean();
+		$rows = $this->wpdb->get_results( $sql );
+		if ( 0 === count( $rows ) ) {
+			return __( 'No data found', 'compare-table' );
+		}
+		$row = $rows[1];
+		// set common variables
+		$show_columns   = $row->show_columns;
+		$alphabetical   = '1' === $row->list_alphabetically;
+		$choose_subject = $row->choose_subject;
+		// the actual sorting of the subjects:
+		$all_subjects  = array();
+		$show_subjects = array();
+		foreach ( $rows as $index => $row ) {
+			if ( false === isset( $all_subjects[ ( $o = (int) $row->subject_order ) ] ) ) {
+				$all_subjects[ $o ] = $row->subject_title;
+			}
+		}
+		ksort( $all_subjects ); // sort by original subject_order
+		$all_subjects = array_values( $all_subjects ); // reset keys
+		// NOTE: apparently 'min' returns a string here...
+		$show_columns = (int) min( count( $all_subjects ), $show_columns ); // do not exceed actual number of subjects
+		for ( $i = 0; $i < $show_columns; ++ $i ) {
+			if (
+				isset( $_GET["compare-table-column-$i"] )
+				&& in_array( ( $get_subject = $_GET["compare-table-column-$i"] ), $all_subjects )
+			) {
+				$show_subjects[] = $get_subject;
+			} else {
+				$show_subjects[] = $all_subjects[ $i ];
+			}
+		}
+		$like_subjects = "'" . implode( "','", $show_subjects ) . "'";
+		// build sql statement to get all compare rows
 		ob_start();
 		echo "SELECT c.*, t.show_columns, t.list_alphabetically, t.choose_subject,
        		s.title subject_title, s.description subject_description, s.o subject_order,
@@ -96,7 +136,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		} else {
 			echo "WHERE t.id = (SELECT id FROM $this->table_type ORDER BY o LIMIT 1)";
 		}
-		echo ' ORDER BY f.o, s.o;';
+		echo " AND s.title IN ($like_subjects)";
+		echo " ORDER BY f.o, FIELD(s.title,$like_subjects);";
 		$sql  = ob_get_clean();
 		$rows = $this->wpdb->get_results( $sql );
 		if ( 0 === count( $rows ) ) {
@@ -110,43 +151,18 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 
 			return ob_get_clean();
 		}
-		$empty_cell = "<td class='cell compare empty'>{$this->empty_cell_contents}</td>";
+		$empty_cell = "<td class='cell compare empty'><p>{$this->empty_cell_contents}</p></td>";
 		// now for the actual output
-		$row           = $rows[0];
-		$all_subjects  = array();
-		$show_subjects = array();
 		$current_field = '';
-		$alphabetical  = '1' === $row->list_alphabetically;
-		$show_columns  = $row->show_columns;
 		$count_columns = 0;
-		// select the first $show_columns subjects to display in the table
-		foreach ( $rows as $index => $row ) {
-			if ( false === isset( $all_subjects[ ( $o = (int) $row->subject_order ) ] ) ) {
-				$all_subjects[ $o ] = $row->subject_title;
-			}
-		}
-		ksort( $all_subjects ); // sort by original subject_order
-		$all_subjects = array_values( $all_subjects ); // reset keys
-		// NOTE: apparently 'min' returns a string here...
-		$show_columns = (int) min( count( $all_subjects ), $show_columns ); // do not exceed actual number of subjects
-		for ( $i = 0; $i < $show_columns; ++ $i ) {
-			if (
-				isset( $_GET["compare-table-column-$i"] )
-				&& in_array( ( $get_subject = $_GET["compare-table-column-$i"] ), $all_subjects )
-			) {
-				$show_subjects[] = $get_subject;
-			} else {
-				$show_subjects[] = $all_subjects[ $i ];
-			}
-		}
 		// build data object for frontend javascript
 		$data = array(
+			'rows'           => $rows, // no longer necessary TODO: remove
 			'show_columns'   => $show_columns,
 			'show_subjects'  => $show_subjects,
 			'all_subjects'   => $all_subjects,
 			'alphabetical'   => $alphabetical,
-			'rows'           => $rows,
-			'choose_subject' => $row->choose_subject,
+			'choose_subject' => $choose_subject,
 		);
 		// start output
 		ob_start();
@@ -551,8 +567,8 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		//echo $row->o;
 		echo '">';
 		echo '<div class="sortable-handle">::</div>';
-		foreach (array('title','description','choose_subject') as $index => $column_name) {
-			if (! property_exists($row, $column_name)) {
+		foreach ( array( 'title', 'description', 'choose_subject' ) as $index => $column_name ) {
+			if ( ! property_exists( $row, $column_name ) ) {
 				continue;
 			}
 			if ( isset( $row->{$column_name} ) ) {
