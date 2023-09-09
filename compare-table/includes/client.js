@@ -3,6 +3,21 @@ function ruigehond014_compare_tables() {
     const tables = document.querySelectorAll('[data-ruigehond014]');
     tables.forEach(function (table) {
         const table_data = JSON.parse(table.dataset.ruigehond014);
+        /* validate table data first */
+        for (let prop in {
+            'show_columns': 1,
+            'show_subjects': 1,
+            'all_subjects': 1,
+            'alphabetical': 1,
+            'rows': 1,
+            'choose_subject': 1
+        }) {
+            if (!table_data.hasOwnProperty(prop)) {
+                console.error(`${prop} missing from table_data.`);
+                return;
+            }
+        }
+        /* cross-hair on hover functionality */
         const do_cross_hair = function (td) {
             if (!td) { /* remove all cross-hairs */
                 const elements = table.querySelectorAll('.cross-haired');
@@ -64,16 +79,9 @@ function ruigehond014_compare_tables() {
             do_cross_hair(null);
         });
         /* startup the select lists in the table headers */
-        console.warn(table_data);
-        for (let prop in {'show_columns': 1, 'show_subjects': 1, 'all_subjects': 1, 'alphabetical': 1, 'rows': 1}) {
-            if (!table_data.hasOwnProperty(prop)) {
-                console.error(`${prop} missing from table_data.`);
-                return;
-            }
-        }
         const select_lists = [];
         for (let i = 0, len = table_data.show_columns; i < len; i++) {
-            const selector = new ruigehond014_selector(table_data.all_subjects, table_data.show_subjects, i);
+            const selector = new ruigehond014_selector(table, table_data, i);
             select_lists.push(selector);
             /* add to dom */
             const th = table.querySelector('.select.index' + i);
@@ -87,11 +95,16 @@ function ruigehond014_compare_tables() {
     });
 }
 
-function ruigehond014_selector(subjects, selected, column_index) {
-    const el = document.createElement('select');
+function ruigehond014_selector(table_element, table_data, column_index) {
     const self = this;
+    const subjects = table_data.all_subjects;
+    const selected = table_data.show_subjects;
+    const el = document.createElement('select');
+    this.table_element = table_element;
     el.classList.add('ruigehond014-selector');
-    el.appendChild(document.createElement('option'));
+    const option = document.createElement('option');
+    option.innerHTML = table_data.choose_subject;
+    el.appendChild(option);
     for (let i = 0, len = subjects.length; i < len; i++) {
         const option = document.createElement('option');
         const subject = subjects[i];
@@ -110,7 +123,7 @@ function ruigehond014_selector(subjects, selected, column_index) {
     return this;
 }
 
-ruigehond014_selector.prototype.select = function(subject) {
+ruigehond014_selector.prototype.select = function (subject) {
     const parts = window.location.href.split('?');
     if (parts.length > 1) {
         const params = parts[1].split('&');
@@ -125,6 +138,9 @@ ruigehond014_selector.prototype.select = function(subject) {
         //parts[1] = params.filter(function(item) { return undefined !== item; }).join('&');
     } else {
         parts.push('compare-table-column-' + this.column_index + '=' + encodeURIComponent(subject));
+    }
+    if (this.hasOwnProperty('table_element')) {
+        this.table_element.classList.add('loading');
     }
     window.location.href = parts.join('?');
 }

@@ -77,7 +77,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		}
 		// build sql statement to get all relevant data
 		ob_start();
-		echo "SELECT c.*, t.show_columns, t.list_alphabetically, 
+		echo "SELECT c.*, t.show_columns, t.list_alphabetically, t.choose_subject,
        		s.title subject_title, s.description subject_description, s.o subject_order,
        		f.title field_title, f.description field_description
        		FROM $this->table_compare c
@@ -141,11 +141,12 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		}
 		// build data object for frontend javascript
 		$data = array(
-			'show_columns'  => $show_columns,
-			'show_subjects' => $show_subjects,
-			'all_subjects'  => $all_subjects,
-			'alphabetical'  => $alphabetical,
-			'rows'          => $rows,
+			'show_columns'   => $show_columns,
+			'show_subjects'  => $show_subjects,
+			'all_subjects'   => $all_subjects,
+			'alphabetical'   => $alphabetical,
+			'rows'           => $rows,
+			'choose_subject' => $row->choose_subject,
 		);
 		// start output
 		ob_start();
@@ -186,7 +187,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 				if ( isset( $row->field_description ) && ( $description = $row->field_description ) ) {
 					echo '<div class="description">', htmlentities( $description ), '</div>';
 				}
-				echo $current_field, '</td>';
+				echo '<p>', $current_field, '</p></td>';
 			}
 			while ( $count_columns < $show_columns && $show_subjects[ $count_columns ] !== $row->subject_title ) {
 				echo $empty_cell;
@@ -199,7 +200,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			if ( isset( $row->description ) && ( $description = $row->description ) ) {
 				echo '<div class="description">', htmlentities( $description ), '</div>';
 			}
-			echo $row->title, '</td>';
+			echo '<p>', $row->title, '</p></td>';
 		}
 		// finish the row if necessary
 		while ( $count_columns < $show_columns - 1 ) {
@@ -331,6 +332,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 						break;
 					case 'title':
 					case 'description':
+					case 'choose_subject':
 						// any string is basically valid
 						break;
 					default:
@@ -536,8 +538,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 	}
 
 	private function get_row_html( \stdClass $row, string $table_short_name, string $current_url ): string {
-		$html_title = htmlentities( $row->title );
-		$id         = (int) $row->id;
+		$id = (int) $row->id;
 		ob_start();
 		echo '<div class="ruigehond014-row orderable ';
 		echo "$table_short_name-row";
@@ -550,29 +551,27 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		//echo $row->o;
 		echo '">';
 		echo '<div class="sortable-handle">::</div>';
-		echo '<textarea data-id="';
-		echo $id;
-		echo '" data-handle="update" data-table_name="';
-		echo $table_short_name;
-		echo '" data-column_name="title" data-value="';
-		echo $html_title;
-		echo '"	class="ruigehond014 input title ajaxupdate tabbed">';
-		echo $html_title;
-		echo '</textarea>';
-		if ( property_exists( $row, 'description' ) ) {
-			if ( isset( $row->description ) ) {
-				$html_description = htmlentities( $row->description );
+		foreach (array('title','description','choose_subject') as $index => $column_name) {
+			if (! property_exists($row, $column_name)) {
+				continue;
+			}
+			if ( isset( $row->{$column_name} ) ) {
+				$html_value = htmlentities( $row->{$column_name} );
 			} else {
-				$html_description = '';
+				$html_value = '';
 			}
 			echo '<textarea data-id="';
 			echo $id;
 			echo '" data-handle="update" data-table_name="';
 			echo $table_short_name;
-			echo '" data-column_name="description" data-value="';
-			echo $html_description;
-			echo '"	class="ruigehond014 input description ajaxupdate tabbed">';
-			echo $html_description;
+			echo '" data-column_name="';
+			echo $column_name;
+			echo '" data-value="';
+			echo $html_value;
+			echo '"	class="ruigehond014 input ';
+			echo $column_name;
+			echo ' ajaxupdate tabbed"/>';
+			echo $html_value;
 			echo '</textarea>';
 		}
 		if ( property_exists( $row, 'show_columns' ) ) {
@@ -762,6 +761,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			$sql = "CREATE TABLE $this->table_type (
 						id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 						title text CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL,
+						choose_subject text CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL,
 						show_columns int NOT NULL DEFAULT 2,
 						list_alphabetically int NOT NULL DEFAULT 0,
 						o INT NOT NULL DEFAULT 1

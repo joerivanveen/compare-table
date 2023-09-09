@@ -1,5 +1,46 @@
-.wp-block-table {
+.wp-block-table.ruigehond014 {
     overflow-x: auto;
+}
+
+.wp-block-table.ruigehond014 table {
+    border-collapse: collapse;
+}
+.wp-block-table.ruigehond014 table td {
+    vertical-align: top;
+}
+.wp-block-table.ruigehond014 table td > * {
+    margin: 0;
+    padding: .1em .21em;
+}
+.wp-block-table.ruigehond014 table.loading {
+    -webkit-filter: blur(4px);
+    -moz-filter: blur(4px);
+    -o-filter: blur(4px);
+    -ms-filter: blur(4px);
+    filter: blur(4px);
+    /* background shine: https://stackoverflow.com/a/55989998 */
+    background-image: linear-gradient(
+            to right,
+            transparent 33%,
+            rgba(140, 140, 140, 0.09) 50%,
+            transparent 66%
+    );
+    background-size: 300% 100%;
+    animation: ruigehond014_shine 1s infinite;
+}
+
+@keyframes ruigehond014_shine {
+    0% {
+        background-position: right;
+    }
+    /*100% {
+      background-position: left; it's the default value, no need to define it
+    }*/
+}
+
+.wp-block-table.ruigehond014 select {
+    width: 100%;
+    font-size: 1rem;
 }
 
 .wp-block-table.ruigehond014 .description {
