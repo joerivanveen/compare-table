@@ -134,10 +134,11 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		}
 		// build data object for frontend javascript
 		$data = array(
-			'show_columns' => $show_columns,
-			'subjects'     => $all_subjects,
-			'alphabetical' => $alphabetical,
-			'rows'         => $rows,
+			'show_columns'  => $show_columns,
+			'show_subjects' => $show_subjects,
+			'subjects'      => $all_subjects,
+			'alphabetical'  => $alphabetical,
+			'rows'          => $rows,
 		);
 		// start output
 		ob_start();

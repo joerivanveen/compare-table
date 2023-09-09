@@ -3,7 +3,6 @@ function ruigehond014_compare_tables() {
     const tables = document.querySelectorAll('[data-ruigehond014]');
     tables.forEach(function (table) {
         const table_data = JSON.parse(table.dataset.ruigehond014);
-        let cross_haired = null;
         const do_cross_hair = function (td) {
             if (! td) { /* remove all cross-hairs */
                 const elements = table.querySelectorAll('.cross-haired');
@@ -13,7 +12,7 @@ function ruigehond014_compare_tables() {
                 }
                 return;
             }
-            // switch off all columns, except this column
+            // find out which column we’re in
             const active_row = td.parentNode;
             let index = 0;
             const length = active_row.children.length;
@@ -37,7 +36,7 @@ function ruigehond014_compare_tables() {
                 } else {
                     row.classList.remove('cross-haired');
                 }
-                // and the cells
+                // and the cells: switch off all columns, except this column
                 const tdlen = row.children.length;
                 for (let tdi = 0; tdi < tdlen; tdi++) {
                     if (tdi === index) {
@@ -47,11 +46,7 @@ function ruigehond014_compare_tables() {
                     }
                 }
             }
-            cross_haired = td;
         }
-        console.warn(table_data);
-        /* startup the select lists in the table headers */
-
         /* make info hovers in cells */
         const cells = table.querySelectorAll('td');
         cells.forEach(function (cell) {
@@ -70,6 +65,9 @@ function ruigehond014_compare_tables() {
         table.addEventListener('mouseleave', function () {
             do_cross_hair(null);
         });
+        /* startup the select lists in the table headers */
+        console.warn(table_data);
+
     });
 }
 
