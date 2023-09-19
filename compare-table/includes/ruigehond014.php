@@ -99,7 +99,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 			$where_table
 			ORDER BY s.o;";
 		$sql = ob_get_clean();
-		if ( WP_DEBUG ) {
+		if ( WP_DEBUG && ! wp_is_json_request() ) {
 			echo "<!--\n$sql\n-->";
 		}
 		$rows = $this->wpdb->get_results( $sql );
@@ -148,7 +148,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		echo " AND s.title IN ($like_subjects)";
 		echo " ORDER BY f.o, FIELD(s.title,$like_subjects);";
 		$sql = ob_get_clean();
-		if ( WP_DEBUG ) {
+		if ( WP_DEBUG && ! wp_is_json_request() ) {
 			echo "<!--\n$sql\n-->";
 		}
 		$rows = $this->wpdb->get_results( $sql );
