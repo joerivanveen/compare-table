@@ -3,7 +3,7 @@
 Plugin Name: Compare table
 Plugin URI: https://github.com/joerivanveen/compare-table
 Description: Creates a table where a visitor can compare services or items or anything really, that you provide from the admin interface.
-Version: 0.1.0
+Version: 1.0.0
 Author: Joeri van Veen
 Author URI: https://wp-developer.eu
 License: GPLv3
@@ -16,7 +16,7 @@ declare( strict_types=1 );
 defined( 'ABSPATH' ) || die();
 
 // This is plugin nr. 14 by Ruige hond. It identifies as: ruigehond014.
-const RUIGEHOND014_VERSION = '0.1.0';
+const RUIGEHOND014_VERSION = '1.0.0';
 
 $ruigehond014_basename = plugin_basename( __FILE__ );
 $ruigehond014_dirname  = dirname( __FILE__ );

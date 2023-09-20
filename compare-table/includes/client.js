@@ -99,6 +99,13 @@ function ruigehond014_compare_tables() {
     });
 }
 
+/**
+ * @constructor
+ * @param table_element
+ * @param table_data
+ * @param column_index
+ * @returns {ruigehond014_selector}
+ */
 function ruigehond014_selector(table_element, table_data, column_index) {
     const self = this;
     const subjects = table_data.all_subjects;
