@@ -126,10 +126,9 @@ function ruigehond014_selector(table_element, table_data, column_index) {
         const subject = subjects[i];
         option.value = subject;
         option.innerHTML = subject;
-        if (selected.indexOf(subject) > -1) {
-            option.hidden = true;
+        if (-1 === selected.indexOf(subject)) {
+            el.appendChild(option);
         }
-        el.appendChild(option);
     }
     el.addEventListener('change', function () {
         self.select(this.options[this.selectedIndex].value);
