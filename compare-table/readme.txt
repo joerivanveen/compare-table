@@ -3,7 +3,7 @@ Contributors: ruigehond
 Tags: compare, table, services, items, interactive
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=hallo@ruigehond.nl&lc=US&item_name=Compare+table&no_note=0&cn=&currency_code=USD&bn=PP-DonationsBF:btn_donateCC_LG.gif:NonHosted
 Requires at least: 6.0
-Tested up to: 6.3
+Tested up to: 6.4
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv3
@@ -38,10 +38,13 @@ Enjoy the plugin. Let me know if you have any questions.
 Install the plugin by clicking ‘Install now’ below, or the ‘Download’ button, and put the `compare-table` folder in your `plugins` folder. Don’t forget to activate it.
 
 == Screenshots ==
+1. Compare table for a visitor.
 
-1. One
+2. Compare table settings with Subject(s) and Field(s).
 
-2. Settings screen
+3. Provide values for a Subject (or a Field).
+
+4. General settings.
 
 == Changelog ==
 

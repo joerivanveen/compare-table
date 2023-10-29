@@ -4,9 +4,9 @@ declare( strict_types=1 );
 
 namespace ruigehond014;
 
-use ruigehond_0_4_0;
+use ruigehond_0_4_1;
 
-class ruigehond014 extends ruigehond_0_4_0\ruigehond {
+class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 	// variables that hold cached items
 	private $database_version, $basename, $admin_url;
 	private $queue_frontend_css, $empty_cell_contents, $remove_on_uninstall;
@@ -246,7 +246,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		return ob_get_clean();
 	}
 
-	public function handle_input( array $args ): ruigehond_0_4_0\returnObject {
+	public function handle_input( array $args ): ruigehond_0_4_1\returnObject {
 		check_ajax_referer( 'ruigehond014_nonce', 'nonce' );
 		if ( false === current_user_can( 'edit_posts' ) || ! is_admin() ) {
 			return $this->getReturnObject( __( 'You do not have sufficient permissions to access this page.', 'compare-table' ) );
@@ -670,7 +670,7 @@ class ruigehond014 extends ruigehond_0_4_0\ruigehond {
 		echo '<div class="wrap"><h1>';
 		echo esc_html( get_admin_page_title() );
 		echo '</h1><p>';
-		echo __( 'Blah blah blah', 'compare-table' );
+		echo __( 'General settings for your compare tables.', 'compare-table' );
 		echo '</p>';
 		echo '<form action="options.php" method="post">';
 		// output security fields for the registered setting

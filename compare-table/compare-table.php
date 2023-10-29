@@ -21,7 +21,7 @@ const RUIGEHOND014_VERSION = '1.0.0';
 $ruigehond014_basename = plugin_basename( __FILE__ );
 $ruigehond014_dirname  = dirname( __FILE__ );
 
-if ( ! class_exists( 'ruigehond_0_4_0\ruigehond', false ) ) {
+if ( ! class_exists( 'ruigehond_0_4_1\ruigehond', false ) ) {
 	include_once( "$ruigehond014_dirname/includes/ruigehond.php" ); // base class
 }
 include_once( "$ruigehond014_dirname/includes/ruigehond014.php" );
