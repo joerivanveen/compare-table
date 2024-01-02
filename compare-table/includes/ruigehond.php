@@ -6,28 +6,28 @@ namespace {
 	defined( 'ABSPATH' ) or die();
 
 	if ( WP_DEBUG ) { // When debug display the errors generated during activation (if any).
-		if ( false === function_exists( 'ruigehond_activation_error' ) ) {
-			function ruigehond_activation_error() {
+		if ( false === function_exists( 'ruigehond_ITOEWERKLKVEIR_activation_error' ) ) {
+			function ruigehond_ITOEWERKLKVEIR_activation_error() {
 				if ( ( $contents = ob_get_contents() ) ) {
-					update_option( 'ruigehond_plugin_error', $contents );
+					update_option( 'ruigehond_ITOEWERKLKVEIR_plugin_error', $contents );
 				}
 			}
 
-			add_action( 'activated_plugin', 'ruigehond_activation_error' );
+			add_action( 'activated_plugin', 'ruigehond_ITOEWERKLKVEIR_activation_error' );
 
 			/* Then to display the error message: */
 			add_action( 'admin_notices', static function () {
-				if ( ( $message = get_option( 'ruigehond_plugin_error' ) ) ) {
-					echo "<div class=\"notice notice-error\"><p>$message</p></div>";
+				if ( ( $message = get_option( 'ruigehond_ITOEWERKLKVEIR_plugin_error' ) ) ) {
+					echo '<div class="notice notice-error"><p>', esc_html($message), '</p></div>';
 				}
 				/* Remove or it will persist */
-				delete_option( 'ruigehond_plugin_error' );
+				delete_option( 'ruigehond_ITOEWERKLKVEIR_plugin_error' );
 			} );
 		}
 	}
 }
 
-namespace ruigehond_0_4_1 {
+namespace ruigehond_ITOEWERKLKVEIR_0_4_1 {
 
 	use stdClass;
 
@@ -404,4 +404,4 @@ namespace ruigehond_0_4_1 {
 			// if data is null it means javascript doesn't have to send anything back
 		}
 	}
-} // end of namespace ruigehond_0_4_1
+} // end of namespace ruigehond_ITOEWERKLKVEIR_0_4_1

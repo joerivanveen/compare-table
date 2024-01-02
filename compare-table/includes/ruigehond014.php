@@ -2,11 +2,11 @@
 
 declare( strict_types=1 );
 
-namespace ruigehond014;
+namespace ruigehond014_ITOEWERKLKVEIR;
 
-use ruigehond_0_4_1;
+use ruigehond_ITOEWERKLKVEIR_0_4_1;
 
-class ruigehond014 extends ruigehond_0_4_1\ruigehond {
+class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 	// variables that hold cached items
 	private $database_version, $basename, $admin_url;
 	private $queue_frontend_css, $empty_cell_contents, $remove_on_uninstall;
@@ -59,7 +59,7 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 			if ( $this->queue_frontend_css ) { // only output css when necessary
 				wp_enqueue_style( 'ruigehond014_stylesheet_display', "{$plugin_dir_url}client.css", [], RUIGEHOND014_VERSION );
 			}
-			add_shortcode( 'compare-table', array( $this, 'handle_shortcode' ) );
+			add_shortcode( 'compare-table_ITOEWERKLKVEIR', array( $this, 'handle_shortcode' ) );
 		}
 	}
 
@@ -99,9 +99,9 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 			$where_table
 			ORDER BY s.o;";
 		$sql = ob_get_clean();
-		if ( WP_DEBUG && ! wp_is_json_request() ) {
-			echo "<!--\n$sql\n-->";
-		}
+//		if ( WP_DEBUG && ! wp_is_json_request() ) {
+//			echo "<!--\n$sql\n-->";
+//		}
 		$rows = $this->wpdb->get_results( $sql );
 		if ( 0 === count( $rows ) ) {
 			return __( 'No data found', 'compare-table' );
@@ -148,16 +148,16 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 		echo " AND s.title IN ($like_subjects)";
 		echo " ORDER BY f.o, FIELD(s.title,$like_subjects);";
 		$sql = ob_get_clean();
-		if ( WP_DEBUG && ! wp_is_json_request() ) {
-			echo "<!--\n$sql\n-->";
-		}
+//		if ( WP_DEBUG && ! wp_is_json_request() ) {
+//			echo "<!--\n$sql\n-->";
+//		}
 		$rows = $this->wpdb->get_results( $sql );
 		if ( 0 === count( $rows ) ) {
 			ob_start();
 			echo '<p>';
 			echo sprintf(
 				__( 'Nothing found for table %s.', 'compare-table' ),
-				htmlentities( var_export( $attributes, true ) )
+				esc_html( var_export( $attributes, true ) )
 			);
 			echo '</p>';
 
@@ -180,9 +180,9 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 		// start output
 		ob_start();
 		echo '<figure class="wp-block-table ruigehond014"><table data-ruigehond014="';
-		echo str_replace( '"', '&quot;', json_encode( $data, JSON_HEX_QUOT ) );
+		echo esc_html( str_replace( '"', '&quot;', json_encode( $data, JSON_HEX_QUOT ) ) );
 		echo '" id="compare-table-';
-		echo str_replace( ' ', '-', htmlentities( $type_title ) );
+		echo str_replace( ' ', '-', esc_html( $type_title ) );
 		echo '">';
 		// table heading, double row with selectors
 		echo '<thead><tr><th class="cell empty">&nbsp;</th>';
@@ -191,7 +191,7 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 		}
 		echo '</tr><tr><th class="cell empty"></th>';
 		for ( $i = 0; $i < $show_columns; ++ $i ) {
-			echo '<th class="cell heading">', $show_subjects[ $i ], '</th>';
+			echo '<th class="cell heading">', esc_html( $show_subjects[ $i ] ), '</th>';
 		}
 		echo '</tr></thead>';
 		// contents of the table
@@ -206,7 +206,7 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 				if ( '' !== $current_field ) {
 					// finish the row if necessary
 					while ( $count_columns < $show_columns - 1 ) {
-						echo $empty_cell;
+						echo wp_kses_post( $empty_cell );
 						++ $count_columns;
 					}
 					// new row
@@ -216,12 +216,12 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 				$count_columns = 0;
 				echo '<td class="cell field">';
 				if ( isset( $row->field_description ) && ( $description = $row->field_description ) ) {
-					echo '<div class="description">', htmlentities( $description ), '</div>';
+					echo '<div class="description">', esc_html( $description ), '</div>';
 				}
 				echo '<p>', $current_field, '</p></td>';
 			}
 			while ( $count_columns < $show_columns && $show_subjects[ $count_columns ] !== $row->subject_title ) {
-				echo $empty_cell;
+				echo wp_kses_post( $empty_cell );
 				++ $count_columns;
 				if ( $count_columns === $show_columns ) {
 					continue 2;
@@ -229,13 +229,13 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 			}
 			echo '<td class="cell compare">';
 			if ( isset( $row->description ) && ( $description = $row->description ) ) {
-				echo '<div class="description">', htmlentities( $description ), '</div>';
+				echo '<div class="description">', esc_html( $description ), '</div>';
 			}
-			echo '<p>', $row->title, '</p></td>';
+			echo '<p>', esc_html( $row->title ), '</p></td>';
 		}
 		// finish the row if necessary
 		while ( $count_columns < $show_columns - 1 ) {
-			echo $empty_cell;
+			echo wp_kses_post( $empty_cell );
 			++ $count_columns;
 		}
 		// end the compare cells
@@ -246,7 +246,7 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 		return ob_get_clean();
 	}
 
-	public function handle_input( array $args ): ruigehond_0_4_1\returnObject {
+	public function handle_input( array $args ): ruigehond_ITOEWERKLKVEIR_0_4_1\returnObject {
 		check_ajax_referer( 'ruigehond014_nonce', 'nonce' );
 		if ( false === current_user_can( 'edit_posts' ) || ! is_admin() ) {
 			return $this->getReturnObject( __( 'You do not have sufficient permissions to access this page.', 'compare-table' ) );
@@ -272,15 +272,15 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 
 		switch ( $handle ) {
 			case 'order_rows':
-				if ( isset( $args['order'] ) and is_array( $args['order'] ) ) {
+				if ( isset( $args['order'] ) && is_array( $args['order'] ) ) {
 					$rows = $args['order'];
 					foreach ( $rows as $id => $o ) {
 						if ( 0 === $id ) {
 							continue;
 						}
 						$this->upsertDb( $table_name,
-							array( 'o' => $o ),
-							array( 'id' => $id )
+							array( 'o' => (int) $o ),
+							array( 'id' => (int) $id )
 						);
 					}
 					$returnObject->set_success( true );
@@ -410,24 +410,23 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 		wp_localize_script( 'ruigehond014_admin_javascript', 'Ruigehond014_global', array(
 			'nonce' => $ajax_nonce,
 		) );
-		$filtered_get = (object) filter_input_array( INPUT_GET );
-		$subject_id   = 0;
-		$field_id     = 0;
-		$type_id      = (int) ( $filtered_get->type_id ?? 0 );
-		$html_title   = '';
-		if ( isset( $filtered_get->subject_id ) ) {
-			$subject_id = (int) $filtered_get->subject_id;
+		$subject_id = 0;
+		$field_id   = 0;
+		$type_id    = (int) ( $_GET['type_id'] ?? 0 );
+		$title      = '';
+		if ( isset( $_GET['subject_id'] ) ) {
+			$subject_id = (int) $_GET['subject_id'];
 			if ( ( $row = $this->wpdb->get_row( "SELECT type_id, title FROM $this->table_subject WHERE id = $subject_id;" ) ) ) {
-				$type_id    = (int) $row->type_id;
-				$html_title = htmlentities( $row->title );
+				$type_id = (int) $row->type_id;
+				$title   = $row->title;
 			} else {
 				$subject_id = 0;
 			}
-		} elseif ( isset( $filtered_get->field_id ) ) {
-			$field_id = (int) $filtered_get->field_id;
+		} elseif ( isset( $_GET['field_id'] ) ) {
+			$field_id = (int) $_GET['field_id'];
 			if ( ( $row = $this->wpdb->get_row( "SELECT type_id, title FROM $this->table_field WHERE id = $field_id;" ) ) ) {
-				$type_id    = (int) $row->type_id;
-				$html_title = htmlentities( $row->title );
+				$type_id = (int) $row->type_id;
+				$title   = $row->title;
 			} else {
 				$field_id = 0;
 			}
@@ -453,7 +452,7 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 			echo '<div id="ruigehond014-compare-overlay" class="close"><div class="wrap ruigehond014 compare">';
 			echo '<p class="spacer top">&nbsp;</p>';
 			echo '<button class="close" data-handle="close">×</button>';
-			echo '<h2>', $html_title, '</h2>';
+			echo '<h2>', esc_html( $title ), '</h2>';
 			$this->tables_page_section_compare( $type_id, $subject_id, $field_id );
 			echo '<p class="spacer bottom">&nbsp;</p></div></div>';
 		}
@@ -493,33 +492,33 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 			$id = $row->id;
 			// write compare specific rows...
 			echo '<div class="ruigehond014-row compare-row"><label>';
-			echo $label;
+			echo esc_html( $label );
 			echo '</label>';
 			foreach ( array( 'title', 'description' ) as $index2 => $column_name ) {
 				if ( isset( $row->{$column_name} ) ) {
-					$html_value = htmlentities( $row->{$column_name} );
+					$column_value = $row->{$column_name};
 				} else {
-					$html_value = '';
+					$column_value = '';
 				}
 				echo '<textarea data-id="';
-				echo $id;
+				echo (int) $id;
 				echo '" data-handle="update" data-table_name="compare" data-column_name="';
-				echo $column_name;
+				echo esc_html( $column_name );
 				echo '" data-value="';
-				echo $html_value;
+				echo esc_html( $column_value );
 				echo '" data-field_id="';
-				echo $field_id;
+				echo (int) $field_id;
 				echo '" data-subject_id="';
-				echo $subject_id;
+				echo (int) $subject_id;
 				echo '"	class="ruigehond014 input ';
-				echo $column_name;
+				echo esc_html( $column_name );
 				echo ' ajaxupdate tabbed"/>';
-				echo $html_value;
+				echo esc_html( $column_value );
 				echo '</textarea>';
 			}
 			echo '<div class="ruigehond014-delete"><input type="button" data-handle="delete_permanently" data-table_name="compare"';
 			if ( null !== $id ) {
-				echo " data-id='$id'";
+				echo ' data-id="', (int) $id, '"';
 			}
 			echo ' class="delete ruigehond014 ajaxupdate" value="CLEAR"/></div>';
 			echo '</div>';
@@ -529,7 +528,7 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 
 	private function tables_page_section( string $table_short_name ) {
 		$where   = '';
-		$type_id = $this->table_ids['type'];
+		$type_id = (int) $this->table_ids['type'];
 		switch ( $table_short_name ) {
 			case 'subject':
 			case 'field':
@@ -537,7 +536,7 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 					$where = "WHERE type_id = $type_id";
 				} else {
 					echo '<section class="ruigehond014_rows"><p>';
-					echo __( 'Choose a type first.', 'compare-table' );
+					echo esc_html__( 'Choose a type first.', 'compare-table' );
 					echo '</p></section><hr/>';
 
 					return;
@@ -548,15 +547,20 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 		echo '<section class="rows-sortable ruigehond014_rows" data-table_name="', $table_short_name, '">';
 		switch ( $table_short_name ) {
 			case 'subject':
-				echo '<h2>', __( 'Subject', 'compare-table' ), '</h2>';
+				echo '<h2>', esc_html__( 'Subject', 'compare-table' ), '</h2>';
 				echo '<div class="ruigehond014-row header-row"><span>Title</span><span>Description</span></div>';
 				break;
 			case 'field':
-				echo '<h2>', __( 'Field', 'compare-table' ), '</h2>';
+				echo '<h2>', esc_html__( 'Field', 'compare-table' ), '</h2>';
 				echo '<div class="ruigehond014-row header-row"><span>Title</span><span>Description</span></div>';
 				break;
 			case 'type':
 				echo '<div class="ruigehond014-row header-row"><span>Title</span><span>Choose subject text</span></div>';
+				break;
+			default:
+				echo 'THAT IS NOT A TABLE</section><hr/>';
+
+				return;
 		}
 		foreach ( $rows as $index => $row ) {
 			echo $this->get_row_html( $row, $table_short_name, $this->admin_url );
@@ -565,9 +569,9 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 		echo '<div class="ruigehond014-row new-row" data-id="0">';
 		echo '<div class="sortable-handle">::</div>'; // visibility set to hidden by css, used for spacing
 		echo '<textarea data-handle="update" data-table_name="';
-		echo $table_short_name;
+		echo esc_html( $table_short_name );
 		echo '" data-type_id="';
-		echo $type_id;
+		echo (int) $type_id;
 		echo '" data-column_name="title" class="ruigehond014 input title ajaxupdate tabbed"></textarea>';
 		echo '</div>';
 		echo '</section><hr/>';
@@ -577,12 +581,12 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 		$id = (int) $row->id;
 		ob_start();
 		echo '<div class="ruigehond014-row orderable ';
-		echo "$table_short_name-row";
+		echo esc_html( $table_short_name ), '-row';
 		if ( isset( $this->table_ids[ $table_short_name ] ) && $id === $this->table_ids[ $table_short_name ] ) {
 			echo ' active';
 		}
 		echo '" data-id="';
-		echo $id;
+		echo (int) $id;
 		//echo '" data-inferred_order="';
 		//echo $row->o;
 		echo '">';
@@ -592,31 +596,31 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 				continue;
 			}
 			if ( isset( $row->{$column_name} ) ) {
-				$html_value = htmlentities( $row->{$column_name} );
+				$column_value = $row->{$column_name};
 			} else {
-				$html_value = '';
+				$column_value = '';
 			}
 			echo '<textarea data-id="';
-			echo $id;
+			echo (int) $id;
 			echo '" data-handle="update" data-table_name="';
-			echo $table_short_name;
+			echo esc_html( $table_short_name );
 			echo '" data-column_name="';
-			echo $column_name;
+			echo esc_html( $column_name );
 			echo '" data-value="';
-			echo $html_value;
+			echo esc_html( $column_value );
 			echo '"	class="ruigehond014 input ';
-			echo $column_name;
+			echo esc_html( $column_name );
 			echo ' ajaxupdate tabbed"/>';
-			echo $html_value;
+			echo esc_html( $column_value );
 			echo '</textarea>';
 		}
 		if ( property_exists( $row, 'show_columns' ) ) {
 			echo '<input type="number" title="';
-			echo __( 'Number of columns to show initially.', 'compare-table' );
+			echo esc_html__( 'Number of columns to show initially.', 'compare-table' );
 			echo '" data-id="';
-			echo $id;
+			echo (int) $id;
 			echo '" data-handle="update" data-table_name="';
-			echo $table_short_name;
+			echo esc_html( $table_short_name );
 			echo '" data-column_name="show_columns" data-value="';
 			echo (int) $row->show_columns;
 			echo '" value="';
@@ -625,11 +629,11 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 		}
 		if ( property_exists( $row, 'list_alphabetically' ) ) {
 			echo '<input type="checkbox" title="';
-			echo __( 'List alphabetically.', 'compare-table' );
+			echo esc_html__( 'List alphabetically.', 'compare-table' );
 			echo '" data-id="';
-			echo $id;
+			echo (int) $id;
 			echo '" data-handle="update" data-table_name="';
-			echo $table_short_name;
+			echo esc_html( $table_short_name );
 			echo '" data-column_name="list_alphabetically" ';
 			if ( 0 === (int) $row->list_alphabetically ) {
 				echo 'data-checked=false';
@@ -639,12 +643,12 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 			echo ' class="ruigehond014 input checkbox ajaxupdate tabbed"/>';
 		}
 		echo '<div class="ruigehond014-edit"><a href="';
-		echo $this->add_query_to_url( $current_url, "{$table_short_name}_id", urlencode( (string) $id ) );
+		echo esc_url( $this->add_query_to_url( $current_url, "{$table_short_name}_id", urlencode( (string) $id ) ) );
 		echo '">EDIT</a></div>';
 		echo '<div class="ruigehond014-delete"><input type="button" data-handle="delete_permanently" data-table_name="';
-		echo $table_short_name;
+		echo esc_html( $table_short_name );
 		echo '" data-id="';
-		echo $id;
+		echo (int) $id;
 		echo '" class="delete ruigehond014 ajaxupdate" value="DELETE"/></div>';
 		echo '</div>';
 
@@ -670,7 +674,7 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 		echo '<div class="wrap"><h1>';
 		echo esc_html( get_admin_page_title() );
 		echo '</h1><p>';
-		echo __( 'General settings for your compare tables.', 'compare-table' );
+		echo esc_html__( 'General settings for your compare tables.', 'compare-table' );
 		echo '</p>';
 		echo '<form action="options.php" method="post">';
 		// output security fields for the registered setting
@@ -731,12 +735,12 @@ class ruigehond014 extends ruigehond_0_4_1\ruigehond {
 					echo '0"><input type="checkbox"';
 				}
 				echo ' onclick="this.previousSibling.value=1-this.previousSibling.value" class="';
-				echo $args['class_name'], '"/>', $args['label_for'], '</label>';
+				echo esc_html( $args['class_name'] ), '"/>', esc_html( $args['label_for'] ), '</label>';
 				break;
 			default: // make text input
-				echo '<input type="text" name="ruigehond014[', $setting_name, ']" value="';
-				echo htmlentities( $this->$setting_name );
-				echo '" style="width: 162px" class="', $args['class_name'], '"/> <label>', $args['label_for'], '</label>';
+				echo '<input type="text" name="ruigehond014[', esc_html( $setting_name ), ']" value="';
+				echo esc_html( $this->$setting_name );
+				echo '" style="width: 162px" class="', esc_html( $args['class_name'] ), '"/> <label>', esc_html( $args['label_for'] ), '</label>';
 		}
 	}
 
