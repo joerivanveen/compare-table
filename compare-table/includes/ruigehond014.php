@@ -79,15 +79,15 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		ob_start();
 		if ( isset( $attributes['type'] ) && ( $type = $attributes['type'] ) ) {
 			if ( 0 !== (int) $type ) {
-				echo 'WHERE t.id = ';
-				echo (int) $type;
+				echo 'WHERE t.id = %d';
+				$where_value = (int) $type;
 			} else {
-				echo 'WHERE t.title = \'';
-				echo addslashes( $type );
-				echo '\'';
+				echo 'WHERE t.title = %s';
+				$where_value = $type;
 			}
 		} else {
-			echo "WHERE t.id = (SELECT id FROM $this->table_type ORDER BY o LIMIT 1)";
+			echo 'WHERE t.id = (SELECT id FROM %i ORDER BY o LIMIT 1)';
+			$where_value = $this->table_type;
 		}
 		$where_table = ob_get_clean();
 		// build sql statement to get the overall data
@@ -102,6 +102,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 //		if ( WP_DEBUG && ! wp_is_json_request() ) {
 //			echo "<!--\n$sql\n-->";
 //		}
+		$sql  = $this->wpdb->prepare( $sql, $where_value );
 		$rows = $this->wpdb->get_results( $sql );
 		if ( 0 === count( $rows ) ) {
 			return __( 'No data found', 'compare-table' );
@@ -130,11 +131,11 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 				$show_subjects[] = $all_subjects[ $i ];
 			}
 		}
-		$like_subjects = implode( ',', array_map( function ( $subject ) {
-			$subject = addslashes( $subject );
-
-			return "'$subject'";
-		}, $show_subjects ) );
+//		$like_subjects = implode( ',', array_map( function ( $subject ) {
+//			$subject = addslashes( $subject );
+//
+//			return "'$subject'";
+//		}, $show_subjects ) );
 		// build sql statement to get all compare rows
 		ob_start();
 		echo "SELECT c.*, t.show_columns, t.list_alphabetically, t.choose_subject,
@@ -145,12 +146,13 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
      		INNER JOIN $this->table_field f ON f.id = c.field_id
      		INNER JOIN $this->table_type t ON t.id = f.type_id AND t.id = s.type_id ";
 		echo $where_table;
-		echo " AND s.title IN ($like_subjects)";
-		echo " ORDER BY f.o, FIELD(s.title,$like_subjects);";
+		echo ' AND s.title IN (', substr( str_repeat( '%s,', count( $show_subjects ) ), 0, - 1 ), ')';
+		echo ' ORDER BY f.o, FIELD(s.title,', substr( str_repeat( '%s,', count( $show_subjects ) ), 0, - 1 ), ');';
 		$sql = ob_get_clean();
 //		if ( WP_DEBUG && ! wp_is_json_request() ) {
 //			echo "<!--\n$sql\n-->";
 //		}
+		$sql  = $this->wpdb->prepare( $sql, array_merge( array( $where_value ), $show_subjects, $show_subjects ) );
 		$rows = $this->wpdb->get_results( $sql );
 		if ( 0 === count( $rows ) ) {
 			ob_start();
@@ -292,10 +294,9 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 					// check if it maybe cannot be deleted
 					switch ( $short_table_name ) {
 						case 'type':
-							if (
-								$this->wpdb->get_var( "SELECT EXISTS (SELECT 1 FROM {$this->table_prefix}subject WHERE type_id = $id);" )
-								|| $this->wpdb->get_var( "SELECT EXISTS (SELECT 1 FROM {$this->table_prefix}field WHERE type_id = $id);" )
-							) {
+							$sql1 = $this->wpdb->prepare( 'SELECT EXISTS (SELECT 1 FROM %i WHERE type_id = %d);', "{$this->table_prefix}subject", $id );
+							$sql2 = $this->wpdb->prepare( 'SELECT EXISTS (SELECT 1 FROM %i WHERE type_id = %d);', "{$this->table_prefix}field", $id );
+							if ( $this->wpdb->get_var( $sql1 ) || $this->wpdb->get_var( $sql2 ) ) {
 								$returnObject->add_message( __( 'Cannot delete this', 'compare-table' ), 'warn' );
 
 								return $returnObject;
@@ -303,7 +304,8 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 							break;
 						case 'subject':
 						case 'field':
-							if ( $this->wpdb->get_var( "SELECT EXISTS (SELECT 1 FROM {$this->table_prefix}compare WHERE {$short_table_name}_id = $id);" ) ) {
+							$sql = $this->wpdb->prepare( 'SELECT EXISTS (SELECT 1 FROM %i WHERE %i = %d);', "{$this->table_prefix}compare", "{$short_table_name}_id", $id );
+							if ( $this->wpdb->get_var( $sql ) ) {
 								$returnObject->add_message( __( 'Cannot delete this', 'compare-table' ), 'warn' );
 
 								return $returnObject;
@@ -384,11 +386,13 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 							// also set the order so it appears at the bottom
 							$this->upsertDb( $table_name, array( 'o' => $id ), array( 'id' => $id ) );
 							// return the entire row as html
-							$row          = $this->wpdb->get_row( "SELECT * FROM $table_name WHERE id = $id;", OBJECT );
+							$sql          = $this->wpdb->prepare( 'SELECT * FROM %i WHERE id = %d;', $table_name, $id );
+							$row          = $this->wpdb->get_row( $sql, OBJECT );
 							$args['html'] = $this->get_row_html( $row, $short_table_name, $this->admin_url );
 						}
 					}
-					$args['value'] = $this->wpdb->get_var( "SELECT $column_name FROM $table_name WHERE id = $id;" );
+					$sql           = $this->wpdb->prepare( 'SELECT %i FROM %i WHERE id = %d;', $column_name, $table_name, $id );
+					$args['value'] = $this->wpdb->get_var( $sql );
 					$returnObject->set_data( $args );
 				}
 				break;
@@ -416,7 +420,8 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		$title      = '';
 		if ( isset( $_GET['subject_id'] ) ) {
 			$subject_id = (int) $_GET['subject_id'];
-			if ( ( $row = $this->wpdb->get_row( "SELECT type_id, title FROM $this->table_subject WHERE id = $subject_id;" ) ) ) {
+			$sql        = $this->wpdb->prepare( 'SELECT type_id, title FROM %i WHERE id = %d;', $this->table_subject, $subject_id );
+			if ( ( $row = $this->wpdb->get_row( $sql ) ) ) {
 				$type_id = (int) $row->type_id;
 				$title   = $row->title;
 			} else {
@@ -424,7 +429,8 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 			}
 		} elseif ( isset( $_GET['field_id'] ) ) {
 			$field_id = (int) $_GET['field_id'];
-			if ( ( $row = $this->wpdb->get_row( "SELECT type_id, title FROM $this->table_field WHERE id = $field_id;" ) ) ) {
+			$sql      = $this->wpdb->prepare( 'SELECT type_id, title FROM %i WHERE id = %d;', $this->table_field, $field_id );
+			if ( ( $row = $this->wpdb->get_row( $sql ) ) ) {
 				$type_id = (int) $row->type_id;
 				$title   = $row->title;
 			} else {
@@ -460,23 +466,25 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 
 	private function tables_page_section_compare( int $type_id, int $subject_id, int $field_id ) {
 		if ( $subject_id > 0 ) {
-			$rows = $this->wpdb->get_results( "
+			$sql  = $this->wpdb->prepare( "
             SELECT 'field' parent_name, f.title parent_title, f.id parent_id, c.*
-                FROM $this->table_field f
-                    JOIN $this->table_subject s ON s.id = $subject_id
-                    LEFT OUTER JOIN $this->table_compare c ON c.field_id = f.id AND c.subject_id = s.id
-                WHERE f.type_id = $type_id
+                FROM %i f
+                    JOIN %i s ON s.id = %d
+                    LEFT OUTER JOIN %i c ON c.field_id = f.id AND c.subject_id = s.id
+                WHERE f.type_id = %d
                 ORDER BY f.o;
-            ", OBJECT );
+            ", $this->table_field, $this->table_subject, $subject_id, $this->table_compare, $type_id );
+			$rows = $this->wpdb->get_results( $sql, OBJECT );
 		} elseif ( $field_id > 0 ) {
-			$rows = $this->wpdb->get_results( "
+			$sql  = $this->wpdb->prepare( "
             SELECT 'subject' parent_name, s.title parent_title, s.id parent_id, c.*
-                FROM $this->table_subject s
-                    JOIN $this->table_field f ON f.id = $field_id
-                    LEFT OUTER JOIN $this->table_compare c ON c.subject_id = s.id AND c.field_id = f.id
-                WHERE s.type_id = $type_id
+                FROM %i s
+                    JOIN %i f ON f.id = %d
+                    LEFT OUTER JOIN %i c ON c.subject_id = s.id AND c.field_id = f.id
+                WHERE s.type_id = %d
                 ORDER BY s.o;
-            ", OBJECT );
+            ", $this->table_subject, $this->table_field, $field_id, $this->table_compare, $type_id );
+			$rows = $this->wpdb->get_results( $sql, OBJECT );
 		} else {
 			return;
 		}
@@ -533,7 +541,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 			case 'subject':
 			case 'field':
 				if ( 0 < $type_id ) {
-					$where = "WHERE type_id = $type_id";
+					$where = (int) $type_id;
 				} else {
 					echo '<section class="ruigehond014_rows"><p>';
 					echo esc_html__( 'Choose a type first.', 'compare-table' );
@@ -543,7 +551,12 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 				}
 				break;
 		}
-		$rows = $this->wpdb->get_results( "SELECT * FROM $this->table_prefix$table_short_name $where ORDER BY o;", OBJECT );
+		if ('' === $where) {
+			$sql = $this->wpdb->prepare( "SELECT * FROM %i ORDER BY o;", "$this->table_prefix$table_short_name" );
+		} else {
+			$sql = $this->wpdb->prepare( "SELECT * FROM %i WHERE type_id = %d ORDER BY o;", "$this->table_prefix$table_short_name", $where );
+		}
+		$rows = $this->wpdb->get_results($sql, OBJECT);
 		echo '<section class="rows-sortable ruigehond014_rows" data-table_name="', $table_short_name, '">';
 		switch ( $table_short_name ) {
 			case 'subject':
@@ -798,21 +811,23 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 	}
 
 	public function activate() {
-		if ( $this->wpdb->get_var( "SHOW TABLES LIKE '$this->table_type';" ) != $this->table_type ) {
-			$sql = "CREATE TABLE $this->table_type (
+		$sql = $this->wpdb->prepare('SHOW TABLES LIKE %s;', $this->table_type);
+		if ( $this->wpdb->get_var( $sql ) != $this->table_type ) {
+			$sql = $this->wpdb->prepare("CREATE TABLE %i (
 						id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 						title text CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL,
 						choose_subject text CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL,
 						show_columns int NOT NULL DEFAULT 2,
 						list_alphabetically int NOT NULL DEFAULT 0,
 						o INT NOT NULL DEFAULT 1
-                    );";
+                    );", $this->table_type);
 			$this->wpdb->query( $sql );
-			$sql = "INSERT INTO $this->table_type (title) VALUES ('Compare table');";
+			$sql = $this->wpdb->prepare("INSERT INTO %i (title) VALUES ('Compare table');", $this->table_type);
 			$this->wpdb->query( $sql );
 		}
-		if ( $this->wpdb->get_var( "SHOW TABLES LIKE '$this->table_subject';" ) != $this->table_subject ) {
-			$sql = "CREATE TABLE $this->table_subject (
+		$sql = $this->wpdb->prepare('SHOW TABLES LIKE %s;', $this->table_subject);
+		if ( $this->wpdb->get_var( $sql ) != $this->table_subject ) {
+			$sql = $this->wpdb->prepare("CREATE TABLE %i (
 						id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 						type_id INT NOT NULL,
 						title text CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL,
@@ -821,11 +836,12 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
                     )
 					DEFAULT CHARACTER SET = utf8mb4
 					COLLATE = utf8mb4_bin
-					;";
+					;", $this->table_subject);
 			$this->wpdb->query( $sql );
 		}
-		if ( $this->wpdb->get_var( "SHOW TABLES LIKE '$this->table_field';" ) != $this->table_field ) {
-			$sql = "CREATE TABLE $this->table_field (
+		$sql = $this->wpdb->prepare('SHOW TABLES LIKE %s;', $this->table_field);
+		if ( $this->wpdb->get_var( $sql ) != $this->table_field ) {
+			$sql = $this->wpdb->prepare("CREATE TABLE %i (
 						id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 						type_id INT NOT NULL,
 						title text CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL,
@@ -834,11 +850,12 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
                     )
 					DEFAULT CHARACTER SET = utf8mb4
 					COLLATE = utf8mb4_bin
-					;";
+					;", $this->table_field);
 			$this->wpdb->query( $sql );
 		}
-		if ( $this->wpdb->get_var( "SHOW TABLES LIKE '$this->table_compare';" ) != $this->table_compare ) {
-			$sql = "CREATE TABLE $this->table_compare (
+		$sql = $this->wpdb->prepare('SHOW TABLES LIKE %s;', $this->table_compare);
+		if ( $this->wpdb->get_var( $sql ) != $this->table_compare ) {
+			$sql = $this->wpdb->prepare("CREATE TABLE %i (
                         id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
                         subject_id INT NOT NULL,
                         field_id INT NOT NULL,
@@ -847,7 +864,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
                     )
                     DEFAULT CHARACTER SET = utf8mb4                        
                     COLLATE = utf8mb4_bin
-                    ;";
+                    ;", $this->table_compare);
 			$this->wpdb->query( $sql );
 		}
 

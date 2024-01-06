@@ -271,17 +271,19 @@ namespace ruigehond_ITOEWERKLKVEIR_0_4_1 {
 
 			foreach ( $where as $key => $value ) {
 				$key = addslashes( $key );
-				if ( true === is_string( $value ) ) {
-					$value = addslashes( $value );
-				}
-				$where_condition = "$where_condition AND $key = '$value'";
+//				if ( true === is_string( $value ) ) {
+//					$value = addslashes( $value );
+//				}
+				$where_condition = "$where_condition AND $key = %s";
 				// remove current id from values, so it will not be part of an insert statement later
 				if ( 'id' === $key || "{$table_name}_id" === $key ) {
 					unset( $values[ $key ] );
 				}
 			}
 
-			if ( $this->wpdb->get_var( "SELECT EXISTS (SELECT 1 FROM $table_name $where_condition);" ) ) {
+			$sql = $this->wpdb->prepare("SELECT EXISTS (SELECT 1 FROM %i $where_condition);", array_merge(array($table_name), array_values($where)));
+
+			if ( $this->wpdb->get_var( $sql ) ) {
 				return - $this->wpdb->update( $table_name, $values, $where );
 			}
 
