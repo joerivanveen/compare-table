@@ -18,7 +18,7 @@ namespace {
 			/* Then to display the error message: */
 			add_action( 'admin_notices', static function () {
 				if ( ( $message = get_option( 'ruigehond_ITOEWERKLKVEIR_plugin_error' ) ) ) {
-					echo '<div class="notice notice-error"><p>', esc_html($message), '</p></div>';
+					echo '<div class="notice notice-error"><p>', esc_html( $message ), '</p></div>';
 				}
 				/* Remove or it will persist */
 				delete_option( 'ruigehond_ITOEWERKLKVEIR_plugin_error' );
@@ -267,23 +267,24 @@ namespace ruigehond_ITOEWERKLKVEIR_0_4_1 {
 		 * return value will be PHP_INT_MAX when insert succeeded, but there was no id column updated
 		 */
 		public function upsertDb( string $table_name, array $values, array $where ): int {
-			$where_condition = 'WHERE 1 = 1';
+			$prepared_values = array( $table_name );
+			$sql             = 'SELECT EXISTS (SELECT 1 FROM %i WHERE 1=1';
 
 			foreach ( $where as $key => $value ) {
-				$key = addslashes( $key );
-//				if ( true === is_string( $value ) ) {
-//					$value = addslashes( $value );
-//				}
-				$where_condition = "$where_condition AND $key = %s";
+				$sql               .= ' AND %i = %s';
+				$prepared_values[] = $key;
+				$prepared_values[] = $value;
 				// remove current id from values, so it will not be part of an insert statement later
 				if ( 'id' === $key || "{$table_name}_id" === $key ) {
 					unset( $values[ $key ] );
 				}
 			}
 
-			$sql = $this->wpdb->prepare("SELECT EXISTS (SELECT 1 FROM %i $where_condition);", array_merge(array($table_name), array_values($where)));
+			$sql .= ');';
 
-			if ( $this->wpdb->get_var( $sql ) ) {
+			$sql = $this->wpdb->prepare( $sql, $prepared_values );
+			$joe = $this->wpdb->get_var( $sql );
+			if ( $joe ) {
 				return - $this->wpdb->update( $table_name, $values, $where );
 			}
 

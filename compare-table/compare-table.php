@@ -40,8 +40,58 @@ add_action( "deactivate_$ruigehond014_basename", array( $ruigehond014, 'deactiva
 add_action( 'wp_ajax_ruigehond014_handle_input', 'ruigehond014_ITOEWERKLKVEIR_handle_input' );
 function ruigehond014_ITOEWERKLKVEIR_handle_input() {
 	global $ruigehond014;
-
-	$return_object = $ruigehond014->handle_input( $_POST );
+	/**
+	 * The plugin will send these variables to the ajax call, but not always all of them of course.
+	 * Note: since the plugin is built to use string values, we convert to (original) string after sanitizing
+	 *
+	 * id
+	 * handle
+	 * table_name
+	 * column_name
+	 * value
+	 * type_id
+	 * field_id
+	 * subject_id
+	 * disable
+	 * nonce
+	 * order[0]
+	 */
+	$sanitized_post = array();
+	foreach (
+		array(
+			'id'          => 'int',
+			'handle'      => 'string',
+			'table_name'  => 'string',
+			'column_name' => 'string',
+			'value'       => 'string',
+			'type_id'     => 'int',
+			'field_id'    => 'int',
+			'subject_id'  => 'int',
+			'disable'     => 'bool',
+			'nonce'       => 'string',
+			'order'       => 'int[]',
+			'timestamp'   => 'int',
+		) as $key => $type
+	) {
+		if ( isset( $_POST[ $key ] ) ) {
+			switch ( $type ) {
+				case 'int':
+					$sanitized_post[ $key ] = (string) (int) $_POST[ $key ];
+					break;
+				case 'bool':
+					$sanitized_post[ $key ] = ( 'true' === $_POST[ $key ] ) ? 'true' : 'false';
+					break;
+				case 'int[]':
+					$sanitized_post[ $key ] = array_map( static function ( $value ) {
+						return (string) (int) $value;
+					}, $_POST[ $key ] );
+					break;
+				default: //string
+					$sanitized_post[ $key ] = wp_kses_post( $_POST[ $key ] );
+			}
+		}
+	}
+	$return_object = $ruigehond014->handle_input( $sanitized_post );
 
 	echo wp_json_encode( $return_object, FILTER_SANITIZE_STRING );
 	die(); // prevent any other output
