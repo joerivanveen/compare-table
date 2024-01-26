@@ -36,7 +36,7 @@ namespace ruigehond_ITOEWERKLKVEIR_0_4_1 {
 	 */
 	class ruigehond {
 		public $identifier, $wpdb;
-		private $options, $options_checksum;
+		private $options, $options_checksum, $text_domain;
 
 		public function __construct( string $identifier ) {
 			$this->identifier = $identifier; // must be ruigehond###, the unique identifier for this plugin
@@ -121,9 +121,31 @@ namespace ruigehond_ITOEWERKLKVEIR_0_4_1 {
 		 *
 		 * @since 0.3.1 added correct plugin domain and directory separator, deprecated old version
 		 */
-		public function loadTranslations( string $text_domain ) {
+		public function loadTranslations( string $text_domain ): void {
 			$path = "$text_domain/languages/";
 			load_plugin_textdomain( $text_domain, false, $path );
+			$this->text_domain = $text_domain;
+		}
+
+		/**
+		 * Returns html escaped translated string, safely
+		 *
+		 * @param string $string
+		 * @param mixed ...$vars vars to replace in the translated string with sprintf
+		 *
+		 * @return string
+		 */
+		public function bipper( string $string, ...$vars ): string {
+			if ( ! $vars ) {
+				return esc_html( __( $string, $this->text_domain ) );
+			}
+			try {
+				// let’s see if the translator included the right placeholders
+				return esc_html( sprintf( __( $string, $this->text_domain ), $vars ) );
+			} catch ( \Throwable $e ) {
+				// my own string can be trusted to have the right placeholders
+				return esc_html( sprintf( $string, $vars ) );
+			}
 		}
 
 		/**
@@ -131,7 +153,7 @@ namespace ruigehond_ITOEWERKLKVEIR_0_4_1 {
 		 * Use floatForHumans to return the intended decimal as a string (floatVal if you want to perform calculations)
 		 * Decimal separator is a . as is standard, use number formatting/ str_replace etc. if you want something else
 		 *
-		 * @param float|null $float float a float that will be formatted to be human-readable
+		 * @param float|null $float will be formatted to be human-readable
 		 *
 		 * @return string the number is returned as a correctly formatted string
 		 *

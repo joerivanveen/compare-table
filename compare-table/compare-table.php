@@ -87,12 +87,12 @@ function ruigehond014_ITOEWERKLKVEIR_handle_input() {
 					}, $_POST[ $key ] );
 					break;
 				default: //string
-					$sanitized_post[ $key ] = wp_kses_post( $_POST[ $key ] );
+					$sanitized_post[ $key ] = wp_kses_normalize_entities( $_POST[ $key ] );
 			}
 		}
 	}
 	$return_object = $ruigehond014->handle_input( $sanitized_post );
 
-	echo wp_json_encode( $return_object, FILTER_SANITIZE_STRING );
+	echo wp_json_encode( $return_object, JSON_PRETTY_PRINT );
 	die(); // prevent any other output
 }
