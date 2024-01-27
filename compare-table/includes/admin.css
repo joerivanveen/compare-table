@@ -69,6 +69,17 @@
     background-color: #2271b1; /* WordPress blue */
 }
 
+/* protect the buttons from strange translations */
+.ruigehond014-edit > *,
+.ruigehond014-delete > *,
+.ruigehond014-clear {
+    text-transform: uppercase;
+    display: inline-block;
+    max-width: 100px;
+    max-height: calc(2rem + .2em);
+    overflow: hidden;
+}
+
 #ruigehond014-compare-overlay .close:hover,
 .ruigehond014-edit > *:hover {
     color: rgb(255, 255, 255);

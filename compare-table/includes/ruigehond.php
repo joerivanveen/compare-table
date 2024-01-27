@@ -124,6 +124,7 @@ namespace ruigehond_ITOEWERKLKVEIR_0_4_1 {
 		public function loadTranslations( string $text_domain ): void {
 			$path = "$text_domain/languages/";
 			load_plugin_textdomain( $text_domain, false, $path );
+			// @since 5.0.0 remember domain for esc_trans__ method
 			$this->text_domain = $text_domain;
 		}
 
@@ -135,16 +136,16 @@ namespace ruigehond_ITOEWERKLKVEIR_0_4_1 {
 		 *
 		 * @return string
 		 */
-		public function bipper( string $string, ...$vars ): string {
+		public function esc_trans__( string $string, ...$vars ): string {
 			if ( ! $vars ) {
 				return esc_html( __( $string, $this->text_domain ) );
 			}
 			try {
 				// let’s see if the translator included the right placeholders
-				return esc_html( sprintf( __( $string, $this->text_domain ), $vars ) );
+				return esc_html( sprintf( __( $string, $this->text_domain ), ...$vars ) );
 			} catch ( \Throwable $e ) {
 				// my own string can be trusted to have the right placeholders
-				return esc_html( sprintf( $string, $vars ) );
+				return esc_html( sprintf( $string, ...$vars ) );
 			}
 		}
 

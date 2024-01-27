@@ -64,7 +64,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 	}
 
 	public function settings_link( $links ) {
-		$link_text = $this->bipper( 'Tables' );
+		$link_text = $this->esc_trans__( 'Tables' );
 		$link      = "<a href='$this->admin_url'>$link_text</a>";
 		array_unshift( $links, $link );
 
@@ -101,7 +101,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		$sql  = $this->wpdb->prepare( $sql, $prepare_values );
 		$rows = $this->wpdb->get_results( $sql );
 		if ( 0 === count( $rows ) ) {
-			return $this->bipper( 'No data found' );
+			return $this->esc_trans__( 'No data found' );
 		}
 		$row = $rows[1];
 		// set common variables
@@ -149,7 +149,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		if ( 0 === count( $rows ) ) {
 			ob_start();
 			echo '<p>';
-			echo $this->bipper( 'Nothing found for table %s.', esc_html( var_export( $attributes, true ) ) );
+			echo $this->esc_trans__( 'Nothing found for table %s.', esc_html( var_export( $attributes, true ) ) );
 			echo '</p>';
 
 			return ob_get_clean();
@@ -240,7 +240,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 	public function handle_input( array $args ): ruigehond_ITOEWERKLKVEIR_0_4_1\returnObject {
 		check_ajax_referer( 'ruigehond014_nonce', 'nonce' );
 		if ( false === current_user_can( 'edit_posts' ) || ! is_admin() ) {
-			return $this->getReturnObject( $this->bipper( 'You do not have sufficient permissions to access this page.' ) );
+			return $this->getReturnObject( $this->esc_trans__( 'You do not have sufficient permissions to access this page.' ) );
 		}
 		$short_table_name = stripslashes( $args['table_name'] );
 		if ( false === in_array( $short_table_name, array(
@@ -249,7 +249,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 				'field',
 				'compare',
 			) ) ) {
-			return $this->getReturnObject( $this->bipper( 'No such table %s', var_export( $args['table_name'], true ) ) );
+			return $this->getReturnObject( $this->esc_trans__( 'No such table %s', var_export( $args['table_name'], true ) ) );
 		}
 		$table_name = "{$this->table_prefix}$short_table_name";
 		if ( isset( $args['id'] ) ) {
@@ -285,7 +285,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 							$sql1 = $this->wpdb->prepare( 'SELECT EXISTS (SELECT 1 FROM %i WHERE type_id = %d);', "{$this->table_prefix}subject", $id );
 							$sql2 = $this->wpdb->prepare( 'SELECT EXISTS (SELECT 1 FROM %i WHERE type_id = %d);', "{$this->table_prefix}field", $id );
 							if ( $this->wpdb->get_var( $sql1 ) || $this->wpdb->get_var( $sql2 ) ) {
-								$returnObject->add_message( $this->bipper( 'Cannot delete this' ), 'warn' );
+								$returnObject->add_message( $this->esc_trans__( 'Cannot delete this' ), 'warn' );
 
 								return $returnObject;
 							}
@@ -294,7 +294,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 						case 'field':
 							$sql = $this->wpdb->prepare( 'SELECT EXISTS (SELECT 1 FROM %i WHERE %i = %d);', "{$this->table_prefix}compare", "{$short_table_name}_id", $id );
 							if ( $this->wpdb->get_var( $sql ) ) {
-								$returnObject->add_message( $this->bipper( 'Cannot delete this' ), 'warn' );
+								$returnObject->add_message( $this->esc_trans__( 'Cannot delete this' ), 'warn' );
 
 								return $returnObject;
 							}
@@ -305,7 +305,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 					}
 					$deletedRows = $this->wpdb->delete( $table_name, array( 'id' => $id ) );
 					if ( false === $deletedRows ) {
-						$returnObject->add_message( $this->bipper( 'Not deleted' ), 'warn' );
+						$returnObject->add_message( $this->esc_trans__( 'Not deleted' ), 'warn' );
 					} else {
 						$args['id'] = 0; // deleted...
 						$returnObject->set_success( true );
@@ -323,7 +323,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 						case 'subject':
 						case 'field':
 							if ( false === isset( $args['type_id'] ) || 0 === ( $type_id = (int) $args['type_id'] ) ) {
-								$returnObject->add_message( $this->bipper( 'Missing id %s', 'type_id' ), 'error' );
+								$returnObject->add_message( $this->esc_trans__( 'Missing id %s', 'type_id' ), 'error' );
 
 								return $returnObject;
 							}
@@ -335,7 +335,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 								|| 0 === ( $subject_id = (int) $args['subject_id'] )
 								|| 0 === ( $field_id = (int) $args['field_id'] )
 							) {
-								$returnObject->add_message( $this->bipper( 'Missing id %s', 'subject_id, field_id' ), 'error' );
+								$returnObject->add_message( $this->esc_trans__( 'Missing id %s', 'subject_id, field_id' ), 'error' );
 
 								return $returnObject;
 							}
@@ -357,13 +357,13 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 						// any string is basically valid
 						break;
 					default:
-						$returnObject->add_message( $this->bipper( 'No such column %s', var_export( $column_name, true ) ), 'error' );
+						$returnObject->add_message( $this->esc_trans__( 'No such column %s', var_export( $column_name, true ) ), 'error' );
 				}
 				// do the upsert
 				$upserted_rows = $this->upsertDb( $table_name, array( $column_name => $value ), $where );
 				// report the upsert
 				if ( 0 === $upserted_rows ) {
-					$returnObject->add_message( $this->bipper( 'Not updated' ), 'warn' );
+					$returnObject->add_message( $this->esc_trans__( 'Not updated' ), 'warn' );
 				} else {
 					$returnObject->set_success( true );
 					if ( 0 < $upserted_rows ) { // this was an insert
@@ -384,7 +384,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 				}
 				break;
 			default:
-				return $this->getReturnObject( $this->bipper( 'Did not understand handle %s', var_export( $args['handle'], true ) ) );
+				return $this->getReturnObject( $this->esc_trans__( 'Did not understand handle %s', var_export( $args['handle'], true ) ) );
 		}
 
 		return $returnObject;
@@ -451,6 +451,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 	}
 
 	private function tables_page_section_compare( int $type_id, int $subject_id, int $field_id ) {
+		$__clear = $this->esc_trans__( 'Clear' );
 		if ( $subject_id > 0 ) {
 			$sql  = $this->wpdb->prepare( '
             SELECT \'field\' parent_name, f.title parent_title, f.id parent_id, c.*
@@ -514,7 +515,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 			if ( null !== $id ) {
 				echo ' data-id="', (int) $id, '"';
 			}
-			echo ' class="delete ruigehond014 ajaxupdate" value="CLEAR"/></div>';
+			echo ' class="delete ruigehond014 ajaxupdate" value="', $__clear, '"/></div>';
 			echo '</div>';
 		}
 		echo '</section>';
@@ -530,7 +531,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 					$where = (int) $type_id;
 				} else {
 					echo '<section class="ruigehond014_rows"><p>';
-					echo $this->bipper( 'Choose a type first.' );
+					echo $this->esc_trans__( 'Choose a type first.' );
 					echo '</p></section><hr/>';
 
 					return;
@@ -542,19 +543,22 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		} else {
 			$sql = $this->wpdb->prepare( 'SELECT * FROM %i WHERE type_id = %d ORDER BY o;', "$this->table_prefix$table_short_name", $where );
 		}
-		$rows = $this->wpdb->get_results( $sql, OBJECT );
+		$rows     = $this->wpdb->get_results( $sql, OBJECT );
+		$__title  = $this->esc_trans__( 'Title' );
+		$__descr  = $this->esc_trans__( 'Description' );
+		$__choose = $this->esc_trans__( 'Choose subject text', 'loep' );
 		echo '<section class="rows-sortable ruigehond014_rows" data-table_name="', esc_html( $table_short_name ), '">';
 		switch ( $table_short_name ) {
 			case 'subject':
-				echo '<h2>', $this->bipper( 'Subject' ), '</h2>';
-				echo '<div class="ruigehond014-row header-row"><span>Title</span><span>Description</span></div>';
+				echo '<h2>', $this->esc_trans__( 'Subject' ), '</h2>';
+				echo '<div class="ruigehond014-row header-row"><span>', $__title, '</span><span>', $__descr, '</span></div>';
 				break;
 			case 'field':
-				echo '<h2>', $this->bipper( 'Field' ), '</h2>';
-				echo '<div class="ruigehond014-row header-row"><span>Title</span><span>Description</span></div>';
+				echo '<h2>', $this->esc_trans__( 'Field' ), '</h2>';
+				echo '<div class="ruigehond014-row header-row"><span>', $__title, '</span><span>', $__descr, '</span></div>';
 				break;
 			case 'type':
-				echo '<div class="ruigehond014-row header-row"><span>Title</span><span>Choose subject text</span></div>';
+				echo '<div class="ruigehond014-row header-row"><span>', $__title, '</span><span>', $__choose, '</span></div>';
 				break;
 			default:
 				echo 'THAT IS NOT A TABLE</section><hr/>';
@@ -577,7 +581,9 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 	}
 
 	private function get_row_html( \stdClass $row, string $table_short_name, string $current_url ): string {
-		$id = (int) $row->id;
+		$id       = (int) $row->id;
+		$__edit   = $this->esc_trans__( 'Edit' );
+		$__delete = $this->esc_trans__( 'Delete' );
 		ob_start();
 		echo '<div class="ruigehond014-row orderable ';
 		echo esc_html( $table_short_name ), '-row';
@@ -615,7 +621,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		}
 		if ( property_exists( $row, 'show_columns' ) ) {
 			echo '<input type="number" title="';
-			echo $this->bipper( 'Number of columns to show initially.' );
+			echo $this->esc_trans__( 'Number of columns to show initially.' );
 			echo '" data-id="';
 			echo (int) $id;
 			echo '" data-handle="update" data-table_name="';
@@ -628,7 +634,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		}
 		if ( property_exists( $row, 'list_alphabetically' ) ) {
 			echo '<input type="checkbox" title="';
-			echo $this->bipper( 'List alphabetically.' );
+			echo $this->esc_trans__( 'List alphabetically.' );
 			echo '" data-id="';
 			echo (int) $id;
 			echo '" data-handle="update" data-table_name="';
@@ -643,12 +649,12 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		}
 		echo '<div class="ruigehond014-edit"><a href="';
 		echo esc_url( $this->add_query_to_url( $current_url, "{$table_short_name}_id", urlencode( (string) $id ) ) );
-		echo '">EDIT</a></div>';
+		echo '">', $__edit, '</a></div>';
 		echo '<div class="ruigehond014-delete"><input type="button" data-handle="delete_permanently" data-table_name="';
 		echo esc_html( $table_short_name );
 		echo '" data-id="';
 		echo (int) $id;
-		echo '" class="delete ruigehond014 ajaxupdate" value="DELETE"/></div>';
+		echo '" class="delete ruigehond014 ajaxupdate" value="', $__delete, '"/></div>';
 		echo '</div>';
 
 		return ob_get_clean();
@@ -673,7 +679,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		echo '<div class="wrap"><h1>';
 		echo esc_html( get_admin_page_title() );
 		echo '</h1><p>';
-		echo $this->bipper( 'General settings for your compare tables.' );
+		echo $this->esc_trans__( 'General settings for your compare tables.' );
 		echo '</p>';
 		echo '<form action="options.php" method="post">';
 		// output security fields for the registered setting
@@ -681,7 +687,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		// output setting sections and their fields
 		do_settings_sections( 'ruigehond014' );
 		// output save settings button
-		submit_button( $this->bipper( 'Save Settings' ) );
+		submit_button( $this->esc_trans__( 'Save Settings' ) );
 		echo '</form></div>';
 	}
 
@@ -696,15 +702,15 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		// register a new section in the page
 		add_settings_section(
 			'global_settings', // section id
-			$this->bipper( 'Options' ), // title
+			$this->esc_trans__( 'Options' ), // title
 			static function () {
 			}, //callback
 			'ruigehond014' // page id
 		);
 		$labels = array(
-			'remove_on_uninstall' => $this->bipper( 'Check this if you want to remove all data when uninstalling the plugin.' ),
-			'queue_frontend_css'  => $this->bipper( 'By default a small css-file is output to the frontend to format the entries. Uncheck to handle the css yourself.', 'faq-with-categories' ),
-			'empty_cell_contents' => $this->bipper( 'Type the default contents for empty cells in the table' ),
+			'remove_on_uninstall' => $this->esc_trans__( 'Check this if you want to remove all data when uninstalling the plugin.' ),
+			'queue_frontend_css'  => $this->esc_trans__( 'By default a small css-file is output to the frontend to format the entries. Uncheck to handle the css yourself.', 'faq-with-categories' ),
+			'empty_cell_contents' => $this->esc_trans__( 'Type the default contents for empty cells in the table' ),
 		);
 		foreach ( $labels as $setting_name => $explanation ) {
 			add_settings_field(
@@ -780,8 +786,8 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		);
 		add_submenu_page(
 			'compare-table',
-			$this->bipper( 'Settings' ), // page_title
-			$this->bipper( 'Settings' ), // menu_title
+			$this->esc_trans__( 'Settings' ), // page_title
+			$this->esc_trans__( 'Settings' ), // menu_title
 			'manage_options',
 			'compare-table-settings',
 			array( $this, 'settings_page' )
@@ -789,10 +795,10 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 
 		global $submenu; // make the first entry go to the tables page
 		$submenu['compare-table'][0] = array(
-			$this->bipper( 'Tables' ),
+			$this->esc_trans__( 'Tables' ),
 			'edit_posts',
 			'compare-table', // the slug that identifies with the callback tables_page of the main menu item
-			$this->bipper( 'Tables' ),
+			$this->esc_trans__( 'Tables' ),
 		);
 	}
 
