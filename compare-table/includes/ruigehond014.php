@@ -207,7 +207,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 				$count_columns = 0;
 				echo '<td class="cell field">';
 				if ( isset( $row->field_description ) && ( $description = $row->field_description ) ) {
-					echo '<div class="description">', esc_html( $description ), '</div>';
+					echo '<div class="description">', wp_kses_post( $description ), '</div>';
 				}
 				echo '<p>', esc_html( $current_field ), '</p></td>';
 			}
@@ -220,7 +220,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 			}
 			echo '<td class="cell compare">';
 			if ( isset( $row->description ) && ( $description = $row->description ) ) {
-				echo '<div class="description">', esc_html( $description ), '</div>';
+				echo '<div class="description">', wp_kses_post( $description ), '</div>';
 			}
 			echo '<p>', esc_html( $row->title ), '</p></td>';
 		}
