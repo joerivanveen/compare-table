@@ -146,6 +146,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 			ob_start();
 			echo '<p>';
 			try {
+				/* translators: string representation of shortcode attributes */
 				echo esc_html( sprintf( __( 'Nothing found for table %s.', 'compare-table' ), esc_html( var_export( $attributes, true ) ) ) );
 			} catch ( \Exception $e ) {
 				echo esc_html( sprintf( 'Nothing found for table %s.', esc_html( var_export( $attributes, true ) ) ) );
@@ -250,6 +251,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 				'compare',
 			) ) ) {
 			try {
+				/* translators: table name */
 				$return_text = esc_html( sprintf( __( 'No such table %s', 'compare-table' ), var_export( $args['table_name'], true ) ) );
 			} catch ( \Exception $e ) {
 				$return_text = esc_html( sprintf( 'No such table %s', var_export( $args['table_name'], true ) ) );
@@ -330,6 +332,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 						case 'field':
 							if ( false === isset( $args['type_id'] ) || 0 === ( $type_id = (int) $args['type_id'] ) ) {
 								try {
+									/* translators: name of id column(s) */
 									$error_msg = esc_html( sprintf( __( 'Missing id %s', 'compare-table' ), 'type_id' ) );
 								} catch ( \Exception $e ) {
 									$error_msg = esc_html( sprintf( 'Missing id %s', 'type_id' ) );
@@ -347,6 +350,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 								|| 0 === ( $field_id = (int) $args['field_id'] )
 							) {
 								try {
+									/* translators: name of id column(s) */
 									$error_msg = esc_html( sprintf( __( 'Missing id %s', 'compare-table' ), 'subject_id, field_id' ) );
 								} catch ( \Exception $e ) {
 									$error_msg = esc_html( sprintf( 'Missing id %s', 'subject_id, field_id' ) );
@@ -374,6 +378,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 						break;
 					default:
 						try {
+							/* translators: string representation of column name */
 							$error_msg = esc_html( sprintf( __( 'No such column %s', 'compare-table' ), var_export( $column_name, true ) ) );
 						} catch ( \Exception $e ) {
 							$error_msg = esc_html( sprintf( 'No such column %s', var_export( $column_name, true ) ) );
@@ -406,6 +411,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 				break;
 			default:
 				try {
+					/* translators: short name of requested handle / action */
 					$message_text = esc_html( sprintf( __( 'Did not understand handle %s', 'compare-table' ), var_export( $args['handle'], true ) ) );
 				} catch ( \Exception $e ) {
 					$message_text = esc_html( sprintf( 'Did not understand handle %s', var_export( $args['handle'], true ) ) );
