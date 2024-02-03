@@ -145,7 +145,11 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		if ( 0 === count( $rows ) ) {
 			ob_start();
 			echo '<p>';
-			echo esc_html( sprintf( __( 'Nothing found for table %s.', 'compare-table' ), esc_html( var_export( $attributes, true ) ) ) );
+			try {
+				echo esc_html( sprintf( __( 'Nothing found for table %s.', 'compare-table' ), esc_html( var_export( $attributes, true ) ) ) );
+			} catch ( \Exception $e ) {
+				echo esc_html( sprintf( 'Nothing found for table %s.', esc_html( var_export( $attributes, true ) ) ) );
+			}
 			echo '</p>';
 
 			return ob_get_clean();
@@ -245,7 +249,13 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 				'field',
 				'compare',
 			) ) ) {
-			return $this->getReturnObject( esc_html( sprintf( __( 'No such table %s', 'compare-table' ), var_export( $args['table_name'], true ) ) ) );
+			try {
+				$return_text = esc_html( sprintf( __( 'No such table %s', 'compare-table' ), var_export( $args['table_name'], true ) ) );
+			} catch ( \Exception $e ) {
+				$return_text = esc_html( sprintf( 'No such table %s', var_export( $args['table_name'], true ) ) );
+			}
+
+			return $this->getReturnObject( $return_text );
 		}
 		$table_name = "{$this->table_prefix}$short_table_name";
 		if ( isset( $args['id'] ) ) {
@@ -319,7 +329,12 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 						case 'subject':
 						case 'field':
 							if ( false === isset( $args['type_id'] ) || 0 === ( $type_id = (int) $args['type_id'] ) ) {
-								$returnObject->add_message( esc_html( sprintf( __( 'Missing id %s', 'compare-table' ), 'type_id' ) ), 'error' );
+								try {
+									$error_msg = esc_html( sprintf( __( 'Missing id %s', 'compare-table' ), 'type_id' ) );
+								} catch ( \Exception $e ) {
+									$error_msg = esc_html( sprintf( 'Missing id %s', 'type_id' ) );
+								}
+								$returnObject->add_message( $error_msg, 'error' );
 
 								return $returnObject;
 							}
@@ -331,7 +346,12 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 								|| 0 === ( $subject_id = (int) $args['subject_id'] )
 								|| 0 === ( $field_id = (int) $args['field_id'] )
 							) {
-								$returnObject->add_message( esc_html( sprintf( __( 'Missing id %s', 'compare-table' ), 'subject_id, field_id' ) ), 'error' );
+								try {
+									$error_msg = esc_html( sprintf( __( 'Missing id %s', 'compare-table' ), 'subject_id, field_id' ) );
+								} catch ( \Exception $e ) {
+									$error_msg = esc_html( sprintf( 'Missing id %s', 'subject_id, field_id' ) );
+								}
+								$returnObject->add_message( $error_msg, 'error' );
 
 								return $returnObject;
 							}
@@ -353,7 +373,12 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 						// any string is basically valid
 						break;
 					default:
-						$returnObject->add_message( esc_html( sprintf( __( 'No such column %s', 'compare-table' ), var_export( $column_name, true ) ) ), 'error' );
+						try {
+							$error_msg = esc_html( sprintf( __( 'No such column %s', 'compare-table' ), var_export( $column_name, true ) ) );
+						} catch ( \Exception $e ) {
+							$error_msg = esc_html( sprintf( 'No such column %s', var_export( $column_name, true ) ) );
+						}
+						$returnObject->add_message( $error_msg, 'error' );
 				}
 				// do the upsert
 				$upserted_rows = $this->upsertDb( $table_name, array( $column_name => $value ), $where );
@@ -380,7 +405,13 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 				}
 				break;
 			default:
-				return $this->getReturnObject( esc_html( sprintf( __( 'Did not understand handle %s', 'compare-table' ), var_export( $args['handle'], true ) ) ) );
+				try {
+					$message_text = esc_html( sprintf( __( 'Did not understand handle %s', 'compare-table' ), var_export( $args['handle'], true ) ) );
+				} catch ( \Exception $e ) {
+					$message_text = esc_html( sprintf( 'Did not understand handle %s', var_export( $args['handle'], true ) ) );
+				}
+
+				return $this->getReturnObject( $message_text );
 		}
 
 		return $returnObject;
