@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ruigehond014 0.0.1\n"
-"POT-Creation-Date: 2024-01-27 09:28+0100\n"
-"PO-Revision-Date: 2024-01-27 09:34+0100\n"
+"POT-Creation-Date: 2024-02-04 08:40+0100\n"
+"PO-Revision-Date: 2024-02-04 08:41+0100\n"
 "Last-Translator: \n"
 "Language-Team: ruigehond\n"
 "Language: nl\n"
@@ -12,123 +12,123 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.4.2\n"
 "X-Poedit-Basepath: ..\n"
-"X-Poedit-KeywordsList: esc_trans__\n"
+"X-Poedit-KeywordsList: esc_html__;__\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: languages\n"
 
 # Description:
-#: includes/ruigehond014.php:67 includes/ruigehond014.php:798
-#: includes/ruigehond014.php:801
+#: includes/ruigehond014.php:63 includes/ruigehond014.php:831
+#: includes/ruigehond014.php:834
 msgid "Tables"
 msgstr "Tabellen"
 
-#: includes/ruigehond014.php:104
+#: includes/ruigehond014.php:100
 msgid "No data found"
 msgstr "Geen gegevens gevonden"
 
-#: includes/ruigehond014.php:152
+#: includes/ruigehond014.php:150
 #, php-format
 msgid "Nothing found for table %s."
 msgstr "Niets gevonden voor tabel %s."
 
-#: includes/ruigehond014.php:243
+#: includes/ruigehond014.php:244
 msgid "You do not have sufficient permissions to access this page."
 msgstr "Je hebt onvoldoende permissies voor deze pagina."
 
-#: includes/ruigehond014.php:252
+#: includes/ruigehond014.php:255
 #, php-format
 msgid "No such table %s"
 msgstr "Tabel %s bestaat niet"
 
-#: includes/ruigehond014.php:288 includes/ruigehond014.php:297
+#: includes/ruigehond014.php:296 includes/ruigehond014.php:305
 msgid "Cannot delete this"
 msgstr "Kan dit niet verwijderen"
 
-#: includes/ruigehond014.php:308
+#: includes/ruigehond014.php:316
 msgid "Not deleted"
 msgstr "Niet verwijderd"
 
-#: includes/ruigehond014.php:326 includes/ruigehond014.php:338
+#: includes/ruigehond014.php:336 includes/ruigehond014.php:354
 #, php-format
 msgid "Missing id %s"
 msgstr "Ontbrekende id %s"
 
-#: includes/ruigehond014.php:360
+#: includes/ruigehond014.php:382
 #, php-format
 msgid "No such column %s"
 msgstr "Kolom %s bestaat niet"
 
-#: includes/ruigehond014.php:366
+#: includes/ruigehond014.php:392
 msgid "Not updated"
 msgstr "Niet bijgewerkt"
 
-#: includes/ruigehond014.php:387
+#: includes/ruigehond014.php:415
 #, php-format
 msgid "Did not understand handle %s"
 msgstr "Begrijp handeling %s niet"
 
-#: includes/ruigehond014.php:454
+#: includes/ruigehond014.php:487
 msgid "Clear"
 msgstr "Wissen"
 
-#: includes/ruigehond014.php:534
-msgid "Choose a type first."
-msgstr "Kies eerst een type."
+#: includes/ruigehond014.php:567
+msgid "Edit a type first."
+msgstr "Bewerk eerst een type."
 
-#: includes/ruigehond014.php:547
+#: includes/ruigehond014.php:580
 msgid "Title"
 msgstr "Titel"
 
-#: includes/ruigehond014.php:548
+#: includes/ruigehond014.php:581
 msgid "Description"
 msgstr "Omschrijving"
 
-#: includes/ruigehond014.php:549
+#: includes/ruigehond014.php:582
 msgid "Choose subject text"
 msgstr "Kies onderwerp tekst"
 
-#: includes/ruigehond014.php:553
+#: includes/ruigehond014.php:586
 msgid "Subject"
 msgstr "Onderwerp"
 
-#: includes/ruigehond014.php:557
+#: includes/ruigehond014.php:590
 msgid "Field"
 msgstr "Veld"
 
-#: includes/ruigehond014.php:585
+#: includes/ruigehond014.php:618
 msgid "Edit"
 msgstr "Bewerken"
 
-#: includes/ruigehond014.php:586
+#: includes/ruigehond014.php:619
 msgid "Delete"
 msgstr "Verwijderen"
 
-#: includes/ruigehond014.php:624
+#: includes/ruigehond014.php:657
 msgid "Number of columns to show initially."
 msgstr "Aantal kolommen in eerste instantie tonen."
 
-#: includes/ruigehond014.php:637
+#: includes/ruigehond014.php:670
 msgid "List alphabetically."
 msgstr "Alfabetisch sorteren."
 
-#: includes/ruigehond014.php:682
+#: includes/ruigehond014.php:715
 msgid "General settings for your compare tables."
 msgstr "Algemene instellingen voor je vergelijk-tabellen."
 
-#: includes/ruigehond014.php:690
+#: includes/ruigehond014.php:723
 msgid "Save Settings"
 msgstr "Instellingen opslaan"
 
-#: includes/ruigehond014.php:705
+#: includes/ruigehond014.php:738
 msgid "Options"
 msgstr "Opties"
 
-#: includes/ruigehond014.php:711
+#: includes/ruigehond014.php:744
 msgid "Check this if you want to remove all data when uninstalling the plugin."
 msgstr ""
 "Vink aan om alle gegevens te verwijderen wanneer je de plugin deïnstalleert."
 
-#: includes/ruigehond014.php:712
+#: includes/ruigehond014.php:745
 msgid ""
 "By default a small css-file is output to the frontend to format the entries. "
 "Uncheck to handle the css yourself."
@@ -136,10 +136,10 @@ msgstr ""
 "Standaard wordt een klein css-bestand in de frontend gestuurd om de tabellen "
 "vorm te geven. Vink uit om zelf de css te beheren."
 
-#: includes/ruigehond014.php:713
+#: includes/ruigehond014.php:746
 msgid "Type the default contents for empty cells in the table"
 msgstr "Voer de standaard inhoud voor lege cellen in de tabel in"
 
-#: includes/ruigehond014.php:789 includes/ruigehond014.php:790
+#: includes/ruigehond014.php:822 includes/ruigehond014.php:823
 msgid "Settings"
 msgstr "Instellingen"

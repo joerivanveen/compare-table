@@ -67,6 +67,7 @@
 
 .ruigehond014-edit > * {
     background-color: #2271b1; /* WordPress blue */
+    vertical-align: middle;
 }
 
 /* protect the buttons from strange translations */

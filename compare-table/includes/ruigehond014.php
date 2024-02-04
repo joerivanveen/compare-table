@@ -564,7 +564,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 					$where = (int) $type_id;
 				} else {
 					echo '<section class="ruigehond014_rows"><p>';
-					echo esc_html__( 'Choose a type first.', 'compare-table' );
+					echo esc_html__( 'Edit a type first.', 'compare-table' );
 					echo '</p></section><hr/>';
 
 					return;
