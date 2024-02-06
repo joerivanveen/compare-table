@@ -484,7 +484,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 	}
 
 	private function tables_page_section_compare( int $type_id, int $subject_id, int $field_id ) {
-		$__clear = esc_html__( 'Clear', 'compare-table' );
+		$__clear = __( 'Clear', 'compare-table' );
 		if ( $subject_id > 0 ) {
 			$sql  = $this->wpdb->prepare( '
             SELECT \'field\' parent_name, f.title parent_title, f.id parent_id, c.*
@@ -548,7 +548,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 			if ( null !== $id ) {
 				echo ' data-id="', (int) $id, '"';
 			}
-			echo ' class="delete ruigehond014 ajaxupdate" value="', $__clear, '"/></div>';
+			echo ' class="delete ruigehond014 ajaxupdate" value="', esc_html($__clear), '"/></div>';
 			echo '</div>';
 		}
 		echo '</section>';
@@ -577,21 +577,21 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 			$sql = $this->wpdb->prepare( 'SELECT * FROM %i WHERE type_id = %d ORDER BY o;', "$this->table_prefix$table_short_name", $where );
 		}
 		$rows     = $this->wpdb->get_results( $sql, OBJECT );
-		$__title  = esc_html__( 'Title', 'compare-table' );
-		$__descr  = esc_html__( 'Description', 'compare-table' );
-		$__choose = esc_html__( 'Choose subject text', 'compare-table' );
+		$__title  = __( 'Title', 'compare-table' );
+		$__descr  = __( 'Description', 'compare-table' );
+		$__choose = __( 'Choose subject text', 'compare-table' );
 		echo '<section class="rows-sortable ruigehond014_rows" data-table_name="', esc_html( $table_short_name ), '">';
 		switch ( $table_short_name ) {
 			case 'subject':
 				echo '<h2>', esc_html__( 'Subject', 'compare-table' ), '</h2>';
-				echo '<div class="ruigehond014-row header-row"><span>', $__title, '</span><span>', $__descr, '</span></div>';
+				echo '<div class="ruigehond014-row header-row"><span>', esc_html($__title), '</span><span>', esc_html($__descr), '</span></div>';
 				break;
 			case 'field':
 				echo '<h2>', esc_html__( 'Field', 'compare-table' ), '</h2>';
-				echo '<div class="ruigehond014-row header-row"><span>', $__title, '</span><span>', $__descr, '</span></div>';
+				echo '<div class="ruigehond014-row header-row"><span>', esc_html($__title), '</span><span>', esc_html($__descr), '</span></div>';
 				break;
 			case 'type':
-				echo '<div class="ruigehond014-row header-row"><span>', $__title, '</span><span>', $__choose, '</span></div>';
+				echo '<div class="ruigehond014-row header-row"><span>', esc_html($__title), '</span><span>', esc_html($__choose), '</span></div>';
 				break;
 			default:
 				echo 'THAT IS NOT A TABLE</section><hr/>';
@@ -615,8 +615,8 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 
 	private function get_row_html( \stdClass $row, string $table_short_name, string $current_url ): string {
 		$id       = (int) $row->id;
-		$__edit   = esc_html__( 'Edit', 'compare-table' );
-		$__delete = esc_html__( 'Delete', 'compare-table' );
+		$__edit   = __( 'Edit', 'compare-table' );
+		$__delete = __( 'Delete', 'compare-table' );
 		ob_start();
 		echo '<div class="ruigehond014-row orderable ';
 		echo esc_html( $table_short_name ), '-row';
@@ -682,12 +682,12 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		}
 		echo '<div class="ruigehond014-edit"><a href="';
 		echo esc_url( $this->add_query_to_url( $current_url, "{$table_short_name}_id", urlencode( (string) $id ) ) );
-		echo '">', $__edit, '</a></div>';
+		echo '">', esc_html($__edit), '</a></div>';
 		echo '<div class="ruigehond014-delete"><input type="button" data-handle="delete_permanently" data-table_name="';
 		echo esc_html( $table_short_name );
 		echo '" data-id="';
 		echo (int) $id;
-		echo '" class="delete ruigehond014 ajaxupdate" value="', $__delete, '"/></div>';
+		echo '" class="delete ruigehond014 ajaxupdate" value="', esc_html($__delete), '"/></div>';
 		echo '</div>';
 
 		return ob_get_clean();
