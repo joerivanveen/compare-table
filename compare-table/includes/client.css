@@ -62,10 +62,10 @@
 
 /* cross hair */
 .wp-block-table.ruigehond014 .cross-haired {
-    background-color: rgb(240, 240, 240);
+    background-color: rgba(0,0,0,.08);
 }
 .wp-block-table.ruigehond014 .cross-haired .cross-haired {
-    background-color: rgb(230, 230, 230);
+    background-color: rgba(0,0,0,.13);
 }
 
 .wp-block-table.ruigehond014 .cell {

@@ -55,7 +55,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 			if ( $this->queue_frontend_css ) { // only output css when necessary
 				wp_enqueue_style( 'ruigehond014_stylesheet_display', "{$plugin_dir_url}client.css", [], RUIGEHOND014_VERSION );
 			}
-			add_shortcode( 'compare-table_ITOEWERKLKVEIR', array( $this, 'handle_shortcode' ) );
+			add_shortcode( 'compare-table', array( $this, 'handle_shortcode' ) );
 		}
 	}
 
@@ -71,9 +71,10 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		if ( ( false === get_the_ID() ) ) {
 			return '';
 		}
-		$sql            = 'SELECT DISTINCT t.show_columns, t.list_alphabetically, t.choose_subject,
+		$sql = 'SELECT DISTINCT t.show_columns, t.list_alphabetically, t.choose_subject,
        		t.title type_title, s.title subject_title, s.o subject_order 
 			FROM %i s INNER JOIN %i t ON t.id = s.type_id ';
+
 		$prepare_values = array( $this->table_subject, $this->table_type );
 		// build where clause for type
 		if ( isset( $attributes['type'] ) && ( $type = $attributes['type'] ) ) {
@@ -90,7 +91,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		}
 		$prepare_values[] = $where_value;
 		// build sql statement to get the overall data
-		$sql .= $where_table . ' ORDER BY s.o;';
+		$sql .= "$where_table ORDER BY s.o;";
 //		if ( WP_DEBUG && ! wp_is_json_request() ) {
 //			echo "<!--\n$sql\n-->";
 //		}
@@ -171,23 +172,26 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		);
 		// start output
 		ob_start();
-		echo '<figure class="wp-block-table ruigehond014"><table data-ruigehond014="';
+		echo '<figure class="wp-block-table ruigehond014 ';
+		echo sanitize_title($type_title);
+		echo '"><table data-ruigehond014="';
 		echo esc_html( str_replace( '"', '&quot;', json_encode( $data, JSON_HEX_QUOT ) ) );
 		echo '" id="compare-table-';
 		echo str_replace( ' ', '-', esc_html( $type_title ) );
 		echo '">';
 		// table heading, double row with selectors
-		echo '<thead><tr><th class="cell empty">&nbsp;</th>';
+		echo '<thead><tr class="header-row first-row"><th class="cell empty">&nbsp;</th>';
 		for ( $i = 0; $i < $show_columns; ++ $i ) {
 			echo '<th class="cell select index', esc_html( (string) $i ), '"></th>';
 		}
-		echo '</tr><tr><th class="cell empty"></th>';
+		echo '</tr><tr class="header-row second-row"><th class="cell empty"></th>';
 		for ( $i = 0; $i < $show_columns; ++ $i ) {
 			echo '<th class="cell heading">', esc_html( $show_subjects[ $i ] ), '</th>';
 		}
 		echo '</tr></thead>';
 		// contents of the table
-		echo '<tbody><tr>';
+		echo '<tbody><tr class="row odd">';
+		$row_index = 0;
 		foreach ( $rows as $index => $row ) {
 			if ( $row->field_title === $current_field ) {
 				++ $count_columns;
@@ -202,7 +206,12 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 						++ $count_columns;
 					}
 					// new row
-					echo '</tr><tr>';
+					if (0 === $row_index % 2) {
+						echo '</tr><tr class="row even">';
+					} else {
+						echo '</tr><tr class="row odd">';
+					}
+					++$row_index;
 				}
 				$current_field = $row->field_title;
 				$count_columns = 0;

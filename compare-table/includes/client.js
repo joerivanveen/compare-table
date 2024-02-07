@@ -1,6 +1,20 @@
 /* for each compare-table that might exist, go ahead and make it interactive */
 function ruigehond014_compare_tables() {
+    // restore scroll position
+    const y = localStorage.getItem('ruigehond014_scrollY');
     const tables = document.querySelectorAll('[data-ruigehond014]');
+    if (y) {
+        if ('scrollBehavior' in document.documentElement.style) {
+            window.scrollTo({
+                left: 0,
+                top: y,
+                behavior: 'smooth'
+            });
+        } else {
+            window.scrollTo(0, parseInt(y));
+        }
+        localStorage.removeItem('ruigehond014_scrollY');
+    }
     tables.forEach(function (table) {
         const table_data = JSON.parse(table.dataset.ruigehond014);
         /* validate table data first */
@@ -157,7 +171,9 @@ ruigehond014_selector.prototype.select = function (subject) {
     if (this.hasOwnProperty('table_element')) {
         this.table_element.classList.add('loading');
     }
-    window.location.href = parts.join('?') + '#'+ this.table_element.id;
+    // keep scroll position please
+    localStorage.setItem('ruigehond014_scrollY', window.scrollY.toString());
+    window.location.href = parts.join('?');// + '#'+ this.table_element.id;
 }
 
 /* only after everything is locked and loaded we’re initialising */
