@@ -42,6 +42,10 @@ add_action( "deactivate_$ruigehond014_basename", array( $ruigehond014, 'deactiva
  */
 add_action( 'wp_ajax_ruigehond014_handle_input', 'ruigehond014_ITOEWERKLKVEIR_handle_input' );
 function ruigehond014_ITOEWERKLKVEIR_handle_input() {
+	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'ruigehond014_nonce' ) ) {
+		return;
+	}
+
 	global $ruigehond014;
 	/**
 	 * The plugin will send these variables to the ajax call, but not always all of them of course.
