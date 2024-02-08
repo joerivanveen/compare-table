@@ -8,10 +8,10 @@ use ruigehond_ITOEWERKLKVEIR_0_4_1;
 
 class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 	// variables that hold cached items
-	private $database_version, $basename, $admin_url;
-	private $queue_frontend_css, $empty_cell_contents, $remove_on_uninstall;
-	private $table_prefix, $table_type, $table_subject, $table_field, $table_compare;
-	private $table_ids;
+	private string $database_version, $basename, $admin_url, $empty_cell_contents;
+	private $queue_frontend_css, $select_below_titles, $remove_on_uninstall;
+	private string $table_prefix, $table_type, $table_subject, $table_field, $table_compare;
+	private array $table_ids;
 
 	public function __construct( $basename ) {
 		parent::__construct( 'ruigehond014' );
@@ -25,6 +25,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		$this->table_compare = "{$wp_prefix}ruigehond014_compare";
 		// settings used in front facing part of plugin
 		$this->queue_frontend_css  = $this->getOption( 'queue_frontend_css', true );
+		$this->select_below_titles = $this->getOption( 'select_below_titles', false );
 		$this->empty_cell_contents = $this->getOption( 'empty_cell_contents', '-' );
 	}
 
@@ -180,15 +181,27 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		echo str_replace( ' ', '-', esc_html( $type_title ) );
 		echo '">';
 		// table heading, double row with selectors
-		echo '<thead><tr class="header-row first-row"><th class="cell empty">&nbsp;</th>';
-		for ( $i = 0; $i < $show_columns; ++ $i ) {
-			echo '<th class="cell select index', esc_html( (string) $i ), '"></th>';
+		if ($this->select_below_titles) {
+			echo '<thead><tr class="header-row first-row titles"><th class="cell empty">&nbsp;</th>';
+			for ( $i = 0; $i < $show_columns; ++ $i ) {
+				echo '<th class="cell heading">', esc_html( $show_subjects[ $i ] ), '</th>';
+			}
+			echo '</tr><tr class="header-row second-row selects"><th class="cell empty">&nbsp;</th>';
+			for ( $i = 0; $i < $show_columns; ++ $i ) {
+				echo '<th class="cell select index', esc_html( (string) $i ), '"></th>';
+			}
+			echo '</tr></thead>';
+		} else {
+			echo '<thead><tr class="header-row first-row titles"><th class="cell empty">&nbsp;</th>';
+			for ( $i = 0; $i < $show_columns; ++ $i ) {
+				echo '<th class="cell select index', esc_html( (string) $i ), '"></th>';
+			}
+			echo '</tr><tr class="header-row second-row selects"><th class="cell empty">&nbsp;</th>';
+			for ( $i = 0; $i < $show_columns; ++ $i ) {
+				echo '<th class="cell heading">', esc_html( $show_subjects[ $i ] ), '</th>';
+			}
+			echo '</tr></thead>';
 		}
-		echo '</tr><tr class="header-row second-row"><th class="cell empty"></th>';
-		for ( $i = 0; $i < $show_columns; ++ $i ) {
-			echo '<th class="cell heading">', esc_html( $show_subjects[ $i ] ), '</th>';
-		}
-		echo '</tr></thead>';
 		// contents of the table
 		echo '<tbody><tr class="row odd">';
 		$row_index = 0;
@@ -752,6 +765,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		$labels = array(
 			'remove_on_uninstall' => esc_html__( 'Check this if you want to remove all data when uninstalling the plugin.', 'compare-table' ),
 			'queue_frontend_css'  => esc_html__( 'By default a small css-file is output to the frontend to format the entries. Uncheck to handle the css yourself.', 'compare-table' ),
+			'select_below_titles'  => esc_html__( 'Check if you want the select lists in the second row, below the titles.', 'compare-table' ),
 			'empty_cell_contents' => esc_html__( 'Type the default contents for empty cells in the table', 'compare-table' ),
 		);
 		foreach ( $labels as $setting_name => $explanation ) {
@@ -774,6 +788,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		$setting_name = $args['setting_name'];
 		switch ( $setting_name ) {
 			case 'queue_frontend_css':
+			case 'select_below_titles':
 			case 'remove_on_uninstall': // make checkbox that transmits 1 or 0, depending on status
 				echo '<label><input type="hidden" name="ruigehond014[', esc_html( $setting_name ), ']" value="';
 				if ( $this->$setting_name ) {

@@ -5,13 +5,16 @@
 .wp-block-table.ruigehond014 table {
     border-collapse: collapse;
 }
+
 .wp-block-table.ruigehond014 table td {
     vertical-align: top;
 }
+
 .wp-block-table.ruigehond014 table td > * {
     margin: 0;
     padding: .1em .21em;
 }
+
 .wp-block-table.ruigehond014 table.loading {
     -webkit-filter: blur(4px);
     -moz-filter: blur(4px);
@@ -45,6 +48,7 @@
 
 .wp-block-table.ruigehond014 .description {
     position: absolute;
+    z-index: 2; /* must be higher than info icon */
     width: 0;
     height: 0;
     opacity: 0;
@@ -60,17 +64,33 @@
     opacity: 1;
 }
 
+/* info icon */
+.description + p:after {
+    content: '';
+    z-index: 1;
+    background-color: currentColor;
+    display: inline-block;
+    width: .75em;
+    height: .75em;
+    margin-left: .1em;
+    vertical-align: text-top;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z'/%3E%3C/svg%3E");
+}
+
 /* cross hair */
 .wp-block-table.ruigehond014 .cross-haired {
-    background-color: rgba(0,0,0,.08);
+    background-color: rgba(0, 0, 0, .08);
 }
+
 .wp-block-table.ruigehond014 .cross-haired .cross-haired {
-    background-color: rgba(0,0,0,.13);
+    background-color: rgba(0, 0, 0, .13);
 }
 
 .wp-block-table.ruigehond014 .cell {
     width: 10%;
 }
+
 @media (max-width: 555px) {
     .wp-block-table.ruigehond014 .cell {
         min-width: calc(50vw - 3px);
