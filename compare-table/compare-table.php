@@ -94,7 +94,7 @@ function ruigehond014_ITOEWERKLKVEIR_handle_input() {
 					}, $_POST[ $key ] );
 					break;
 				default: //string
-					$sanitized_post[ $key ] = wp_kses_normalize_entities( $_POST[ $key ] );
+					$sanitized_post[ $key ] = wp_kses_post( $_POST[ $key ] );
 			}
 		}
 	}
