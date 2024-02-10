@@ -81,7 +81,7 @@ function ruigehond014_compare_tables() {
         /* make info hovers in cells */
         const cells = table.querySelectorAll('td');
         cells.forEach(function (cell) {
-            cell.addEventListener('mouseenter', function () {
+            function hover() {
                 const description = this.querySelector('.description');
                 const box = cell.getBoundingClientRect();
                 if (description) {
@@ -91,11 +91,24 @@ function ruigehond014_compare_tables() {
                 }
                 /* also: */
                 do_cross_hair(this);
-            });
-            cell.addEventListener('mouseleave', function () {
+            }
+
+            function unhover() {
                 const description = this.querySelector('.description');
                 if (description) description.classList.remove('active');
-            });
+            }
+
+            function cancelhovers() {
+                const descriptions = this.querySelectorAll('.description.active');
+                descriptions.forEach(function (el) {
+                    el.classList.remove('active');
+                });
+            }
+
+            cell.addEventListener('mouseenter', hover, {passive: true});
+            cell.addEventListener('mouseleave', unhover, {passive: true});
+            cell.addEventListener('touchend', hover, {passive: true});
+            cell.addEventListener('touchmove', cancelhovers, {passive: true});
         });
         /* remove cross-hair */
         table.addEventListener('mouseleave', function () {

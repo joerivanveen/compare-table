@@ -1,5 +1,6 @@
 .wp-block-table.ruigehond014 {
     overflow-x: auto;
+    user-select: none;
 }
 
 .wp-block-table.ruigehond014 table {
