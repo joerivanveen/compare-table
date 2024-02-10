@@ -83,7 +83,12 @@ function ruigehond014_compare_tables() {
         cells.forEach(function (cell) {
             cell.addEventListener('mouseenter', function () {
                 const description = this.querySelector('.description');
-                if (description) description.classList.add('active');
+                const box = cell.getBoundingClientRect();
+                if (description) {
+                    description.style.left = box.left + 'px';
+                    description.style.top = box.top + window.scrollY + 'px';
+                    description.classList.add('active');
+                }
                 /* also: */
                 do_cross_hair(this);
             });
@@ -104,7 +109,10 @@ function ruigehond014_compare_tables() {
             /* add to dom */
             const th = table.querySelector('.select.index' + i);
             if (th) {
-                th.appendChild(selector.el);
+                const div = document.createElement('div');
+                div.classList.add('dddiv' + (i + 1).toString()); // graffitinetwerk
+                div.appendChild(selector.el);
+                th.appendChild(div);
             } else {
                 console.error(`.select.index${i} missing from table.`);
             }
