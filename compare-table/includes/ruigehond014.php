@@ -9,7 +9,7 @@ use ruigehond_ITOEWERKLKVEIR_0_4_1;
 class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 	// variables that hold cached items
 	private string $database_version, $basename, $admin_url, $empty_cell_contents;
-	private $queue_frontend_css, $select_below_titles, $remove_on_uninstall;
+	private $queue_frontend_css, $select_below_titles, $remove_on_uninstall, $is_mobile = false;
 	private string $table_prefix, $table_type, $table_subject, $table_field, $table_compare;
 	private array $table_ids;
 
@@ -52,6 +52,11 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 			// settings link on plugins page
 			add_filter( "plugin_action_links_$this->basename", array( $this, 'settings_link' ) );
 		} else {
+			if (true === isset($_SERVER['HTTP_USER_AGENT'])
+			    && false !== strpos(strtolower($_SERVER['HTTP_USER_AGENT']), 'mobile')
+			) {
+				$this->is_mobile = true;
+			}
 			wp_enqueue_script( 'ruigehond014_javascript', "{$plugin_dir_url}client.js", array( 'jquery' ), RUIGEHOND014_VERSION );
 			if ( $this->queue_frontend_css ) { // only output css when necessary
 				wp_enqueue_style( 'ruigehond014_stylesheet_display', "{$plugin_dir_url}client.css", [], RUIGEHOND014_VERSION );
@@ -115,6 +120,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		}
 		// NOTE: apparently 'min' returns a string here...
 		$show_columns = (int) min( count( $all_subjects ), $show_columns ); // do not exceed actual number of subjects
+		if (2 < $show_columns && true === $this->is_mobile) $show_columns = 2;
 		for ( $i = 0; $i < $show_columns; ++ $i ) {
 			if (
 				isset( $_GET["compare-table-column-$i"] )
