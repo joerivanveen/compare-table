@@ -110,7 +110,8 @@ function ruigehond014_compare_tables() {
         table.addEventListener('mouseleave', function () {
             do_cross_hair(null);
         });
-        /* remove lingering descriptions */
+
+        /* remove lingering descriptions on touch devices */
         function cancelhovers() {
             if (!this.querySelector('.description.active')) return;
             const descriptions = this.querySelectorAll('.description.active');
@@ -118,6 +119,7 @@ function ruigehond014_compare_tables() {
                 el.classList.remove('active');
             });
         }
+
         table.addEventListener('touchstart', cancelhovers, {passive: true});
         /* startup the select lists in the table headers */
         const select_lists = [];
@@ -136,6 +138,88 @@ function ruigehond014_compare_tables() {
             }
         }
         table_data.select_lists = select_lists;
+
+        /* scroll indicator arrows */
+        function scrollTo(x, y, element) {
+            if (!element) element = window;
+            if ('scrollBehavior' in document.documentElement.style) {
+                element.scrollTo({
+                    left: x,
+                    top: y,
+                    behavior: 'smooth'
+                });
+            } else {
+                element.scrollTo(x, y);
+            }
+        }
+
+        function arrows() {
+            clearTimeout(this.ruigehond014_resize_throttle);
+            this.ruigehond014_resize_throttle = setTimeout(function () {
+                const figures = document.querySelectorAll('.wp-block-table.ruigehond014');
+                const len = figures.length;
+                for (let i = 0; i < len; ++i) {
+                    const figure = figures[i];
+                    let buttonLeft = figure.querySelector('.button.left');
+                    let buttonRight = figure.querySelector('.button.right');
+                    if (figure.scrollWidth > figure.clientWidth) {
+                        if (!buttonLeft) {
+                            buttonLeft = document.createElement('div');
+                            buttonLeft.classList.add('button');
+                            buttonLeft.classList.add('left');
+                            buttonLeft.addEventListener('click', function () {
+                                scrollTo(-1 * figure.clientWidth + figure.scrollLeft, 0, figure)
+                            });
+                            figure.appendChild(buttonLeft);
+                        }
+                        if ((figure.scrollLeft - 1) > 0) {
+                            buttonLeft.classList.add('active');
+                        } else {
+                            buttonLeft.classList.remove('active');
+                        }
+                        if (!buttonRight) {
+                            buttonRight = document.createElement('div');
+                            buttonRight.classList.add('button');
+                            buttonRight.classList.add('right');
+                            buttonRight.addEventListener('click', function () {
+                                scrollTo(figure.scrollLeft + figure.clientWidth, 0, figure);
+                            });
+                            figure.appendChild(buttonRight);
+                        }
+                        if (figure.scrollLeft + 1 < figure.scrollWidth - figure.clientWidth) {
+                            buttonRight.classList.add('active');
+                        } else {
+                            buttonRight.classList.remove('active');
+                        }
+                        /* position buttons optimal top */
+                        const half = figure.scrollHeight / 2;
+                        if (figure.scrollHeight > window.innerHeight) {
+                            const rect = figure.getBoundingClientRect();
+                            if (rect.top > half || rect.bottom < half) {
+                                buttonLeft.remove();
+                                buttonRight.remove();
+                            } else {
+                                buttonLeft.classList.add('halfway');
+                                buttonRight.classList.add('halfway');
+                            }
+                        } else {
+                            buttonLeft.classList.remove('halfway');
+                            buttonRight.classList.remove('halfway');
+                            buttonLeft.style.transform = `translateY(calc(-50% - ${half}px))`;
+                            buttonRight.style.transform = `translateY(calc(-50% - ${half}px))`;
+                        }
+                    } else {
+                        buttonLeft && buttonLeft.remove();
+                        buttonRight && buttonRight.remove();
+                    }
+                    figure.addEventListener('scroll', arrows, {passive: true});
+                }
+            }, 130);
+        }
+
+        window.addEventListener('resize', arrows, {passive: true});
+        window.addEventListener('scroll', arrows, {passive: true});
+        arrows();
     });
 }
 
