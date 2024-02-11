@@ -98,22 +98,27 @@ function ruigehond014_compare_tables() {
                 if (description) description.classList.remove('active');
             }
 
-            function cancelhovers() {
-                const descriptions = this.querySelectorAll('.description.active');
-                descriptions.forEach(function (el) {
-                    el.classList.remove('active');
-                });
-            }
-
             cell.addEventListener('mouseenter', hover, {passive: true});
             cell.addEventListener('mouseleave', unhover, {passive: true});
             cell.addEventListener('touchend', hover, {passive: true});
-            cell.addEventListener('touchmove', cancelhovers, {passive: true});
+            const description = cell.querySelector('.description');
+            description && description.addEventListener('touchstart', function (e) {
+                e.stopPropagation();
+            }, {passive: true});
         });
         /* remove cross-hair */
         table.addEventListener('mouseleave', function () {
             do_cross_hair(null);
         });
+        /* remove lingering descriptions */
+        function cancelhovers() {
+            if (!this.querySelector('.description.active')) return;
+            const descriptions = this.querySelectorAll('.description.active');
+            descriptions.forEach(function (el) {
+                el.classList.remove('active');
+            });
+        }
+        table.addEventListener('touchstart', cancelhovers, {passive: true});
         /* startup the select lists in the table headers */
         const select_lists = [];
         for (let i = 0, len = table_data.show_columns; i < len; i++) {

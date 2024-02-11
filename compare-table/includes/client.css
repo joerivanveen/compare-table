@@ -53,7 +53,8 @@
     width: 0;
     height: 0;
     opacity: 0;
-    overflow: clip;
+    visibility: hidden; /* for nice fade-in, but instant fade-out */
+    overflow: hidden;
     background-color: rgb(240, 240, 240);
     padding: 3px;
     transition: opacity .5s ease-in-out;
@@ -62,6 +63,7 @@
 .wp-block-table.ruigehond014 .description.active {
     width: auto;
     height: auto;
+    visibility: visible;
     opacity: 1;
 }
 
