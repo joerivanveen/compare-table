@@ -195,7 +195,7 @@ function ruigehond014_compare_tables() {
                         const half = figure.scrollHeight / 2;
                         if (figure.scrollHeight > window.innerHeight) {
                             const rect = figure.getBoundingClientRect();
-                            if (rect.top > half || rect.bottom < half) {
+                            if (rect.top > half - 100 || rect.bottom < half + 100) {
                                 buttonLeft.remove();
                                 buttonRight.remove();
                             } else {
