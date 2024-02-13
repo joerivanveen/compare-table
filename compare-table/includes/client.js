@@ -85,8 +85,18 @@ function ruigehond014_compare_tables() {
                 const description = this.querySelector('.description');
                 const box = cell.getBoundingClientRect();
                 if (description) {
-                    description.style.left = box.left + 'px';
+                    const left = box.left;
+                    if (window.innerWidth - left < 200) {
+                        description.style.right = right + 'px';
+                    } else {
+                        if (left < 0) {
+                            description.style.left = '0';
+                        } else {
+                            description.style.left = left + 'px';
+                        }
+                    }
                     description.style.top = box.top + window.scrollY + 'px';
+                    description.style.maxWidth = box.width + 'px';
                     description.classList.add('active');
                 }
                 /* also: */
@@ -121,6 +131,7 @@ function ruigehond014_compare_tables() {
         }
 
         table.addEventListener('touchstart', cancelhovers, {passive: true});
+
         /* startup the select lists in the table headers */
         const select_lists = [];
         for (let i = 0, len = table_data.show_columns; i < len; i++) {
@@ -158,6 +169,8 @@ function ruigehond014_compare_tables() {
             const len = figures.length;
             for (let i = 0; i < len; ++i) {
                 const figure = figures[i];
+                figure.addEventListener('scroll', cancelhovers, {passive: true});
+
                 let buttonLeft = figure.querySelector('.button.left');
                 let buttonRight = figure.querySelector('.button.right');
                 if (figure.scrollWidth > figure.clientWidth) {
@@ -190,7 +203,7 @@ function ruigehond014_compare_tables() {
                         buttonRight.classList.remove('active');
                     }
                     /* position buttons optimal top */
-                    const half = figure.scrollHeight / 2;
+                    const half = window.innerHeight / 2;
                     const arrow_height = buttonRight.scrollHeight;
                     if (figure.scrollHeight > window.innerHeight) {
                         const rect = figure.getBoundingClientRect();
@@ -210,8 +223,8 @@ function ruigehond014_compare_tables() {
                         } else {
                             buttonLeft.classList.add('halfway');
                             buttonRight.classList.add('halfway');
-                            buttonLeft.style.transform = 'translateY(0)';
-                            buttonRight.style.transform = 'translateY(0)';
+                            buttonLeft.style.transform = 'translateY(-100%)';
+                            buttonRight.style.transform = 'translateY(-100%)';
                         }
                     } else {
                         buttonLeft.classList.remove('halfway');
