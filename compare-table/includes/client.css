@@ -107,7 +107,6 @@
     width: 1rem;
     height: 1rem;
     padding: .5rem;
-    transform: translateY(-50%); /* center the center line */
     z-index: 2;
     transition: opacity .34s ease-in-out;
 }
@@ -120,7 +119,6 @@
 .wp-block-table.ruigehond014 .button.halfway {
     position: fixed;
     top: 50vh;
-    transform: translateY(-50%);
 }
 
 .wp-block-table.ruigehond014 .button.left {
