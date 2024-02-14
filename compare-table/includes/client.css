@@ -92,10 +92,6 @@
     background-color: rgba(0, 0, 0, .13);
 }
 
-.wp-block-table.ruigehond014 .cell {
-    width: 10%;
-}
-
 /* nav buttons */
 .wp-block-table.ruigehond014 .button {
     position: absolute;
@@ -133,6 +129,7 @@
 
 @media (max-width: 555px) {
     .wp-block-table.ruigehond014 .cell {
-        min-width: calc(50vw - 3px);
+        min-width: 45vw;
+        max-width: 45vw;
     }
 }

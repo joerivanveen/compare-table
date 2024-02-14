@@ -86,18 +86,18 @@ function ruigehond014_compare_tables() {
                 const box = cell.getBoundingClientRect();
                 if (description) {
                     const left = box.left;
-                    if (window.innerWidth - left < 200) {
-                        description.style.right = right + 'px';
+                    if (window.innerWidth - left < box.width / 2) {
+                        // don’t show it
                     } else {
                         if (left < 0) {
                             description.style.left = '0';
                         } else {
                             description.style.left = left + 'px';
                         }
+                        description.style.top = box.top + window.scrollY + 'px';
+                        description.style.maxWidth = box.width + 'px';
+                        description.classList.add('active');
                     }
-                    description.style.top = box.top + window.scrollY + 'px';
-                    description.style.maxWidth = box.width + 'px';
-                    description.classList.add('active');
                 }
                 /* also: */
                 do_cross_hair(this);
@@ -134,6 +134,7 @@ function ruigehond014_compare_tables() {
 
         /* startup the select lists in the table headers */
         const select_lists = [];
+        const column_width = 100 / (table_data.show_columns + 1);
         for (let i = 0, len = table_data.show_columns; i < len; i++) {
             const selector = new ruigehond014_selector(table, table_data, i);
             select_lists.push(selector);
@@ -144,6 +145,7 @@ function ruigehond014_compare_tables() {
                 div.classList.add('dddiv' + (i + 1).toString()); // graffitinetwerk
                 div.appendChild(selector.el);
                 th.appendChild(div);
+                th.style.width = `${column_width}%`;
             } else {
                 console.error(`.select.index${i} missing from table.`);
             }
@@ -227,10 +229,11 @@ function ruigehond014_compare_tables() {
                             buttonRight.style.transform = 'translateY(-100%)';
                         }
                     } else {
+                        const height = figure.scrollHeight / 2;
                         buttonLeft.classList.remove('halfway');
                         buttonRight.classList.remove('halfway');
-                        buttonLeft.style.transform = `translateY(-${half}px)`;
-                        buttonRight.style.transform = `translateY(-${half}px)`;
+                        buttonLeft.style.transform = `translateY(-${height}px)`;
+                        buttonRight.style.transform = `translateY(-${height}px)`;
                     }
                 } else {
                     buttonLeft && buttonLeft.remove();
@@ -267,6 +270,7 @@ function ruigehond014_selector(table_element, table_data, column_index) {
     el.classList.add('ruigehond014-selector');
     const option = document.createElement('option');
     option.innerHTML = table_data.choose_subject;
+    option.setAttribute('hidden', 'hidden');
     el.appendChild(option);
     for (let i = 0, len = subjects.length; i < len; i++) {
         const option = document.createElement('option');
