@@ -20,7 +20,9 @@ You can order the subjects and fields in any way you want. You can also add a de
 
 Set the initial view of each table (how many columns, which subjects) which the visitor can change with select lists.
 
-Everything is nicely formatted by default, but you can easily override the css with your own, should you want to.
+Everything is nicely formatted by default, albeit a bit bland. You can easily override the css with your own, should you want to.
+
+The table works fine with touch devices as well. On mobile devices the width is automatically restricted to two columns.
 
 Show a compare-table anywhere by using the shortcode `[compare-table]` (which will show the first table).
 To show a specific table that is not the first one, you can provide its id (the `type_id` in the querystring) or title, like so:
@@ -31,7 +33,7 @@ Note: providing the id is slightly faster.
 
 The plugin adds 4 tables to your database. For each compare-table there are two highly optimized queries executed.
 
-Enjoy the plugin. Let me know if you have any questions.
+Enjoy the plugin! Let me know if you have any questions.
 
 == Installation ==
 
@@ -48,4 +50,4 @@ Install the plugin by clicking ‘Install now’ below, or the ‘Download’ bu
 
 == Changelog ==
 
-1.0.0: release
+1.0.17: release
