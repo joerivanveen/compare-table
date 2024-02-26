@@ -48,7 +48,7 @@
 }
 
 .wp-block-table.ruigehond014 .description {
-    position: absolute;
+    position: fixed;
     z-index: 2; /* must be higher than info icon */
     width: 0;
     height: 0;

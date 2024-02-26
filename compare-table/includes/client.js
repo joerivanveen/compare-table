@@ -94,7 +94,7 @@ function ruigehond014_compare_tables() {
                         } else {
                             description.style.left = left + 'px';
                         }
-                        description.style.top = box.top + window.scrollY + 'px';
+                        description.style.top = box.top + 'px';
                         description.style.maxWidth = box.width + 'px';
                         description.classList.add('active');
                     }
@@ -108,7 +108,7 @@ function ruigehond014_compare_tables() {
                 if (description) description.classList.remove('active');
             }
 
-            cell.addEventListener('mouseenter', hover, {passive: true});
+            cell.addEventListener('mousemove', hover, {passive: true});
             cell.addEventListener('mouseleave', unhover, {passive: true});
             cell.addEventListener('touchend', hover, {passive: true});
             const description = cell.querySelector('.description');
@@ -131,6 +131,7 @@ function ruigehond014_compare_tables() {
         }
 
         table.addEventListener('touchstart', cancelhovers, {passive: true});
+        document.addEventListener('scroll', cancelhovers, {passive: true});
 
         /* startup the select lists in the table headers */
         const select_lists = [];
