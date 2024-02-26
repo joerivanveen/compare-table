@@ -184,7 +184,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		echo '"><table data-ruigehond014="';
 		echo esc_html( str_replace( '"', '&quot;', json_encode( $data, JSON_HEX_QUOT ) ) );
 		echo '" id="compare-table-';
-		echo str_replace( ' ', '-', esc_html( $type_title ) );
+		echo sanitize_title($type_title);
 		echo '">';
 		// table heading, double row with selectors
 		if ($this->select_below_titles) {
@@ -238,7 +238,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 				if ( isset( $row->field_description ) && ( $description = $row->field_description ) ) {
 					echo '<div class="description">', wp_kses_post( $description ), '</div>';
 				}
-				echo '<p>', esc_html( $current_field ), '</p></td>';
+				echo '<p>', wp_kses_post( $current_field ), '</p></td>';
 			}
 			while ( $count_columns < $show_columns && $show_subjects[ $count_columns ] !== $row->subject_title ) {
 				echo wp_kses_post( $empty_cell );
@@ -251,7 +251,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 			if ( isset( $row->description ) && ( $description = $row->description ) ) {
 				echo '<div class="description">', wp_kses_post( $description ), '</div>';
 			}
-			echo '<p>', esc_html( $row->title ), '</p></td>';
+			echo '<p>', wp_kses_post( $row->title ), '</p></td>';
 		}
 		// finish the row if necessary
 		while ( $count_columns < $show_columns - 1 ) {
