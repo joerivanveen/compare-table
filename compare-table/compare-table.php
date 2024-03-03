@@ -24,13 +24,13 @@ const RUIGEHOND014_VERSION = '1.0.17';
 $ruigehond014_basename = plugin_basename( __FILE__ );
 $ruigehond014_dirname  = dirname( __FILE__ );
 
-if ( ! class_exists( 'ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond', false ) ) {
+if ( ! class_exists( 'ruigehond_0_5_0\ruigehond', false ) ) {
 	include_once( "$ruigehond014_dirname/includes/ruigehond.php" ); // base class
 }
 include_once( "$ruigehond014_dirname/includes/ruigehond014.php" );
 
 global $ruigehond014;
-$ruigehond014 = new ruigehond014_ITOEWERKLKVEIR\ruigehond014( $ruigehond014_basename );
+$ruigehond014 = new ruigehond014\ruigehond014( $ruigehond014_basename );
 
 add_action( 'init', array( $ruigehond014, 'initialize' ) );
 add_action( "activate_$ruigehond014_basename", array( $ruigehond014, 'activate' ) );
@@ -40,8 +40,8 @@ add_action( "deactivate_$ruigehond014_basename", array( $ruigehond014, 'deactiva
  * setup ajax for admin interface, ajax call javascript needs to call whatever
  * comes after wp_ajax_ (so in this case: ruigehond014_handle_input)
  */
-add_action( 'wp_ajax_ruigehond014_handle_input', 'ruigehond014_ITOEWERKLKVEIR_handle_input' );
-function ruigehond014_ITOEWERKLKVEIR_handle_input() {
+add_action( 'wp_ajax_ruigehond014_handle_input', 'ruigehond014_handle_input' );
+function ruigehond014_handle_input() {
 	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'ruigehond014_nonce' ) ) {
 		return;
 	}

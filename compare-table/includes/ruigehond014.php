@@ -2,11 +2,11 @@
 
 declare( strict_types=1 );
 
-namespace ruigehond014_ITOEWERKLKVEIR;
+namespace ruigehond014;
 
-use ruigehond_ITOEWERKLKVEIR_0_4_1;
+use ruigehond_0_5_0;
 
-class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
+class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 	// variables that hold cached items
 	private string $database_version, $basename, $admin_url, $empty_cell_contents;
 	private $queue_frontend_css, $select_below_titles, $remove_on_uninstall, $is_mobile = false;
@@ -266,7 +266,7 @@ class ruigehond014 extends ruigehond_ITOEWERKLKVEIR_0_4_1\ruigehond {
 		return ob_get_clean();
 	}
 
-	public function handle_input( array $args ): ruigehond_ITOEWERKLKVEIR_0_4_1\returnObject {
+	public function handle_input( array $args ): ruigehond_0_5_0\returnObject {
 		check_ajax_referer( 'ruigehond014_nonce', 'nonce' );
 		if ( false === current_user_can( 'edit_posts' ) || ! is_admin() ) {
 			return $this->getReturnObject( esc_html__( 'You do not have sufficient permissions to access this page.', 'compare-table' ) );
