@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=hallo
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 1.0.17
+Stable tag: 1.1.0
 License: GPLv3
 
 Creates a table where a visitor can compare services or items or anything really, that you provide from the admin interface.
@@ -49,5 +49,7 @@ Install the plugin by clicking ‘Install now’ below, or the ‘Download’ bu
 4. General settings.
 
 == Changelog ==
+
+1.1.0: restore wp delete links
 
 1.0.17: release
