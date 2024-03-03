@@ -87,15 +87,15 @@
     background-color: #1e8cbe; /* WordPress blue hover */
 }
 
-.delete {
+.ruigehond014-delete .delete {
     display: none;
 }
 
-.delete[data-id] {
+.ruigehond014-delete .delete[data-id] {
     display: inline-block;
 }
 
-.delete:hover {
+.ruigehond014-delete .delete:hover {
     background-color: rgb(200, 0, 0);
 }
 
