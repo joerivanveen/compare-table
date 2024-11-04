@@ -5,7 +5,7 @@ Plugin URI: https://github.com/joerivanveen/compare-table
 Description: Creates a table where a visitor can compare services or items or anything really, that you provide from the admin interface.
 Version: 1.1.0
 Requires at least: 6.0
-Tested up to: 6.4
+Tested up to: 6.7
 Requires PHP: 7.4
 Author: Joeri van Veen
 Author URI: https://wp-developer.eu
