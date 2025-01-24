@@ -317,6 +317,7 @@ ruigehond014_selector.prototype.select_ajax = function (subject) {
             nonce: Ruigehond014_global.nonce,
             endpoint: 'fetch',
             type_id: obj.type_id,
+            show_columns: obj.show_columns,
         }, params = [];
     show[this.column_index] = subject;
     for (const index in show) {

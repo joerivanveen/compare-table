@@ -3,7 +3,7 @@
 Plugin Name: Compare table
 Plugin URI: https://github.com/joerivanveen/compare-table
 Description: Creates a table where a visitor can compare services or items or anything really, that you provide from the admin interface.
-Version: 2.0.1
+Version: 2.0.2
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -19,7 +19,7 @@ declare( strict_types=1 );
 defined( 'ABSPATH' ) || die();
 
 // This is plugin nr. 14 by Ruige hond. It identifies as: ruigehond014.
-const RUIGEHOND014_VERSION = '2.0.1';
+const RUIGEHOND014_VERSION = '2.0.2';
 
 $ruigehond014_basename = plugin_basename( __FILE__ );
 $ruigehond014_dirname  = dirname( __FILE__ );
@@ -56,7 +56,11 @@ function ruigehond014_table_data() {
 	$response = array();
 	switch ( wp_unslash( $_POST['endpoint'] ) ) {
 		case 'fetch':
-			$response['table'] = $ruigehond014->get_table_html( array( 'type' => $type_id ) );
+			$response['table'] = $ruigehond014->get_table_html(
+				array(
+					'type'         => $type_id,
+					'show_columns' => (int) $_POST['show_columns']
+				) );
 			break;
 	}
 	//$response['timestamp'] = (int) $_POST['timestamp'];

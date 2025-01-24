@@ -120,7 +120,7 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 		}
 		$row = $rows[1];
 		// set common variables
-		$show_columns   = $row->show_columns;
+		$show_columns   = $attributes['show_columns'] ?? $row->show_columns;
 		$alphabetical   = '1' === $row->list_alphabetically;
 		$choose_subject = $row->choose_subject;
 		$type_title     = $row->type_title;
