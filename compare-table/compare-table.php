@@ -37,6 +37,34 @@ add_action( "activate_$ruigehond014_basename", array( $ruigehond014, 'activate' 
 add_action( "deactivate_$ruigehond014_basename", array( $ruigehond014, 'deactivate' ) );
 
 /**
+ * Setup ajax for frontend, currently only refreshes a column
+ */
+add_action( 'wp_ajax_ruigehond014_table_data', 'ruigehond014_table_data' );
+add_action( 'wp_ajax_nopriv_ruigehond014_table_data', 'ruigehond014_table_data' );
+function ruigehond014_table_data() {
+	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['nonce'] ), 'ruigehond014_nonce' ) ) {
+		return;
+	}
+	/* This is for the frontend form, it can handle several requests */
+	if ( false === isset( $_POST['endpoint'] ) ) {
+		_ajax_wp_die_handler( 'Endpoint must be set.' );
+	}
+	if ( 0 === ( $type_id = (int) $_POST['type_id'] ) ) {
+		_ajax_wp_die_handler( 'Please supply type_id for the table.' );
+	}
+	global $ruigehond014;
+	$response = array();
+	switch ( wp_unslash( $_POST['endpoint'] ) ) {
+		case 'fetch':
+			$response['table'] = $ruigehond014->get_table_html( array( 'type' => $type_id ) );
+			break;
+	}
+	//$response['timestamp'] = (int) $_POST['timestamp'];
+	echo wp_json_encode( $response, JSON_PRETTY_PRINT );
+	die(); // prevent further output
+}
+
+/**
  * setup ajax for admin interface, ajax call javascript needs to call whatever
  * comes after wp_ajax_ (so in this case: ruigehond014_handle_input)
  */

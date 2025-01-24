@@ -9,7 +9,7 @@ use ruigehond_0_5_0;
 class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 	// variables that hold cached items
 	private string $database_version, $basename, $admin_url, $empty_cell_contents;
-	private $queue_frontend_css, $select_below_titles, $remove_on_uninstall, $is_mobile = false;
+	private $queue_frontend_css, $fetch_table_by_ajax, $select_below_titles, $remove_on_uninstall, $is_mobile = false;
 	private string $table_prefix, $table_type, $table_subject, $table_field, $table_compare;
 	private array $table_ids;
 
@@ -26,6 +26,7 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 		// settings used in front facing part of plugin
 		$this->queue_frontend_css  = $this->getOption( 'queue_frontend_css', true );
 		$this->select_below_titles = $this->getOption( 'select_below_titles', false );
+		$this->fetch_table_by_ajax = $this->getOption( 'fetch_table_by_ajax', false );
 		$this->empty_cell_contents = $this->getOption( 'empty_cell_contents', '-' );
 	}
 
@@ -52,12 +53,18 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 			// settings link on plugins page
 			add_filter( "plugin_action_links_$this->basename", array( $this, 'settings_link' ) );
 		} else {
-			if (true === isset($_SERVER['HTTP_USER_AGENT'])
-			    && false !== strpos(strtolower($_SERVER['HTTP_USER_AGENT']), 'mobile')
+			if ( true === isset( $_SERVER['HTTP_USER_AGENT'] )
+			     && false !== strpos( strtolower( $_SERVER['HTTP_USER_AGENT'] ), 'mobile' )
 			) {
 				$this->is_mobile = true;
 			}
 			wp_enqueue_script( 'ruigehond014_javascript', "{$plugin_dir_url}client.js", array( 'jquery' ), RUIGEHOND014_VERSION );
+			$ajax_nonce = wp_create_nonce( 'ruigehond014_nonce' );
+			wp_localize_script( 'ruigehond014_javascript', 'Ruigehond014_global', array(
+				'nonce'               => $ajax_nonce,
+				'ajaxurl'             => admin_url( 'admin-ajax.php' ),
+				'fetch_table_by_ajax' => $this->fetch_table_by_ajax,
+			) );
 			if ( $this->queue_frontend_css ) { // only output css when necessary
 				wp_enqueue_style( 'ruigehond014_stylesheet_display', "{$plugin_dir_url}client.css", [], RUIGEHOND014_VERSION );
 			}
@@ -77,8 +84,13 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 		if ( ( false === get_the_ID() ) ) {
 			return '';
 		}
+
+		return $this->get_table_html( $attributes );
+	}
+
+	public function get_table_html( $attributes = [] ) {
 		$sql = 'SELECT DISTINCT t.show_columns, t.list_alphabetically, t.choose_subject,
-       		t.title type_title, s.title subject_title, s.o subject_order 
+       		t.title type_title, s.title subject_title, s.o subject_order, t.id type_id
 			FROM %i s INNER JOIN %i t ON t.id = s.type_id ';
 
 		$prepare_values = array( $this->table_subject, $this->table_type );
@@ -112,6 +124,7 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 		$alphabetical   = '1' === $row->list_alphabetically;
 		$choose_subject = $row->choose_subject;
 		$type_title     = $row->type_title;
+		$type_id        = $row->type_id;
 		// the actual sorting of the subjects:
 		$all_subjects  = array();
 		$show_subjects = array();
@@ -120,7 +133,9 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 		}
 		// NOTE: apparently 'min' returns a string here...
 		$show_columns = (int) min( count( $all_subjects ), $show_columns ); // do not exceed actual number of subjects
-		if (2 < $show_columns && true === $this->is_mobile) $show_columns = 2;
+		if ( 2 < $show_columns && true === $this->is_mobile ) {
+			$show_columns = 2;
+		}
 		for ( $i = 0; $i < $show_columns; ++ $i ) {
 			if (
 				isset( $_GET["compare-table-column-$i"] )
@@ -171,6 +186,7 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 		$data = array(
 			//'rows'           => $rows,
 			'type_title'     => $type_title,
+			'type_id'        => $type_id,
 			'show_columns'   => $show_columns,
 			'show_subjects'  => $show_subjects,
 			'all_subjects'   => $all_subjects,
@@ -180,14 +196,14 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 		// start output
 		ob_start();
 		echo '<figure class="wp-block-table ruigehond014 ';
-		echo sanitize_title($type_title);
+		echo sanitize_title( $type_title );
 		echo '"><table data-ruigehond014="';
 		echo esc_html( str_replace( '"', '&quot;', json_encode( $data, JSON_HEX_QUOT ) ) );
 		echo '" id="compare-table-';
-		echo sanitize_title($type_title);
+		echo sanitize_title( $type_title );
 		echo '">';
 		// table heading, double row with selectors
-		if ($this->select_below_titles) {
+		if ( $this->select_below_titles ) {
 			echo '<thead><tr class="header-row first-row titles"><th class="cell empty">&nbsp;</th>';
 			for ( $i = 0; $i < $show_columns; ++ $i ) {
 				echo '<th class="cell heading">', esc_html( $show_subjects[ $i ] ), '</th>';
@@ -225,12 +241,12 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 						++ $count_columns;
 					}
 					// new row
-					if (0 === $row_index % 2) {
+					if ( 0 === $row_index % 2 ) {
 						echo '</tr><tr class="row even">';
 					} else {
 						echo '</tr><tr class="row odd">';
 					}
-					++$row_index;
+					++ $row_index;
 				}
 				$current_field = $row->field_title;
 				$count_columns = 0;
@@ -576,7 +592,7 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 			if ( null !== $id ) {
 				echo ' data-id="', (int) $id, '"';
 			}
-			echo ' class="delete ruigehond014 ajaxupdate" value="', esc_html($__clear), '"/></div>';
+			echo ' class="delete ruigehond014 ajaxupdate" value="', esc_html( $__clear ), '"/></div>';
 			echo '</div>';
 		}
 		echo '</section>';
@@ -612,14 +628,14 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 		switch ( $table_short_name ) {
 			case 'subject':
 				echo '<h2>', esc_html__( 'Subject', 'compare-table' ), '</h2>';
-				echo '<div class="ruigehond014-row header-row"><span>', esc_html($__title), '</span><span>', esc_html($__descr), '</span></div>';
+				echo '<div class="ruigehond014-row header-row"><span>', esc_html( $__title ), '</span><span>', esc_html( $__descr ), '</span></div>';
 				break;
 			case 'field':
 				echo '<h2>', esc_html__( 'Field', 'compare-table' ), '</h2>';
-				echo '<div class="ruigehond014-row header-row"><span>', esc_html($__title), '</span><span>', esc_html($__descr), '</span></div>';
+				echo '<div class="ruigehond014-row header-row"><span>', esc_html( $__title ), '</span><span>', esc_html( $__descr ), '</span></div>';
 				break;
 			case 'type':
-				echo '<div class="ruigehond014-row header-row"><span>', esc_html($__title), '</span><span>', esc_html($__choose), '</span></div>';
+				echo '<div class="ruigehond014-row header-row"><span>', esc_html( $__title ), '</span><span>', esc_html( $__choose ), '</span></div>';
 				break;
 			default:
 				echo 'THAT IS NOT A TABLE</section><hr/>';
@@ -710,12 +726,12 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 		}
 		echo '<div class="ruigehond014-edit"><a href="';
 		echo esc_url( $this->add_query_to_url( $current_url, "{$table_short_name}_id", urlencode( (string) $id ) ) );
-		echo '">', esc_html($__edit), '</a></div>';
+		echo '">', esc_html( $__edit ), '</a></div>';
 		echo '<div class="ruigehond014-delete"><input type="button" data-handle="delete_permanently" data-table_name="';
 		echo esc_html( $table_short_name );
 		echo '" data-id="';
 		echo (int) $id;
-		echo '" class="delete ruigehond014 ajaxupdate" value="', esc_html($__delete), '"/></div>';
+		echo '" class="delete ruigehond014 ajaxupdate" value="', esc_html( $__delete ), '"/></div>';
 		echo '</div>';
 
 		return ob_get_clean();
@@ -769,10 +785,11 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 			'ruigehond014' // page id
 		);
 		$labels = array(
-			'remove_on_uninstall' => esc_html__( 'Check this if you want to remove all data when uninstalling the plugin.', 'compare-table' ),
+			'select_below_titles' => esc_html__( 'Check if you want the select lists in the second row, below the titles.', 'compare-table' ),
+			'empty_cell_contents' => esc_html__( 'Type the default contents for empty cells in the table.', 'compare-table' ),
+			'fetch_table_by_ajax' => esc_html__( 'Fetch the table with ajax rather than page refresh.', 'compare-table' ),
 			'queue_frontend_css'  => esc_html__( 'By default a small css-file is output to the frontend to format the entries. Uncheck to handle the css yourself.', 'compare-table' ),
-			'select_below_titles'  => esc_html__( 'Check if you want the select lists in the second row, below the titles.', 'compare-table' ),
-			'empty_cell_contents' => esc_html__( 'Type the default contents for empty cells in the table', 'compare-table' ),
+			'remove_on_uninstall' => esc_html__( 'Check this if you want to remove all data when uninstalling the plugin.', 'compare-table' ),
 		);
 		foreach ( $labels as $setting_name => $explanation ) {
 			add_settings_field(
@@ -794,6 +811,7 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 		$setting_name = $args['setting_name'];
 		switch ( $setting_name ) {
 			case 'queue_frontend_css':
+			case 'fetch_table_by_ajax':
 			case 'select_below_titles':
 			case 'remove_on_uninstall': // make checkbox that transmits 1 or 0, depending on status
 				echo '<label><input type="hidden" name="ruigehond014[', esc_html( $setting_name ), ']" value="';
@@ -818,6 +836,7 @@ class ruigehond014 extends ruigehond_0_5_0\ruigehond {
 			switch ( $key ) {
 				// on / off flags (1 vs 0 on form submit, true / false otherwise
 				case 'queue_frontend_css':
+				case 'fetch_table_by_ajax':
 				case 'remove_on_uninstall':
 					$options[ $key ] = ( $value === '1' or $value === true );
 					break;

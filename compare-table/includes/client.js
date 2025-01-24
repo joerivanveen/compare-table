@@ -130,7 +130,9 @@ function ruigehond014_compare_tables() {
             });
         }
 
+        table.removeEventListener('touchstart', cancelhovers);
         table.addEventListener('touchstart', cancelhovers, {passive: true});
+        document.removeEventListener('scroll', cancelhovers);
         document.addEventListener('scroll', cancelhovers, {passive: true});
 
         /* startup the select lists in the table headers */
@@ -172,6 +174,7 @@ function ruigehond014_compare_tables() {
             const len = figures.length;
             for (let i = 0; i < len; ++i) {
                 const figure = figures[i];
+                figure.removeEventListener('scroll', cancelhovers);
                 figure.addEventListener('scroll', cancelhovers, {passive: true});
 
                 let buttonLeft = figure.querySelector('.button.left');
@@ -240,11 +243,14 @@ function ruigehond014_compare_tables() {
                     buttonLeft && buttonLeft.remove();
                     buttonRight && buttonRight.remove();
                 }
+                figure.removeEventListener('scroll', arrows);
                 figure.addEventListener('scroll', arrows, {passive: true});
             }
         }
 
+        window.removeEventListener('resize', arrows);
         window.addEventListener('resize', arrows, {passive: true});
+        window.removeEventListener('scroll', arrows);
         window.addEventListener('scroll', arrows, {passive: true});
         arrows();
     });
@@ -271,7 +277,7 @@ function ruigehond014_selector(table_element, table_data, column_index) {
     el.classList.add('ruigehond014-selector');
     const option = document.createElement('option');
     option.innerHTML = table_data.choose_subject;
-    option.setAttribute('hidden', 'hidden');
+    //option.setAttribute('hidden', 'hidden');
     el.appendChild(option);
     for (let i = 0, len = subjects.length; i < len; i++) {
         const option = document.createElement('option');
@@ -290,28 +296,82 @@ function ruigehond014_selector(table_element, table_data, column_index) {
 }
 
 ruigehond014_selector.prototype.select = function (subject) {
+    if (!jQuery || !Ruigehond014_global || !this.hasOwnProperty('table_element')) {
+        console.error('Sorry, compare-table is not ready for this.');
+        return;
+    }
+    this.table_element.classList.add('loading');
+    if (Ruigehond014_global.hasOwnProperty('fetch_table_by_ajax')
+        && '1' === Ruigehond014_global.fetch_table_by_ajax) {
+        this.select_ajax(subject);
+    } else {
+        this.select_href(subject);
+    }
+}
+ruigehond014_selector.prototype.select_ajax = function (subject) {
+    const self = this,
+        obj = JSON.parse(this.table_element.dataset.ruigehond014) || {},
+        show = obj.show_subjects,
+        data = {
+            action: 'ruigehond014_table_data',
+            nonce: Ruigehond014_global.nonce,
+            endpoint: 'fetch',
+            type_id: obj.type_id,
+        }, params = [];
+    show[this.column_index] = subject;
+    for (const index in show) {
+        params.push(`compare-table-column-${index}=` + encodeURIComponent(show[index]));
+    }
+    // fetch the table anew, and replace in the dom, uses $_GET for the columns
+    jQuery.ajax({
+        url: Ruigehond014_global.ajaxurl + '?' + Object.values(params).join('&'),
+        data: data,
+        dataType: 'JSON',
+        method: 'POST',
+        success: function (json) {
+            if (json.hasOwnProperty('table')) {
+                // swap tables in the figure, and reprocess select elements
+                requestAnimationFrame(function () {
+                    const figure = self.table_element.parentElement,
+                        x = figure.scrollLeft;
+                    figure.innerHTML = json.table;
+                    ruigehond014_compare_tables();
+                    if (0 < x) {
+                        figure.scrollTo(x, 0); // does not work for some reason, I don’t know
+                    }
+                });
+            } else {
+                console.error('No table found in response', json);
+            }
+            self.table_element.classList.remove('loading');
+        },
+        error: function (json) {
+            console.error('Communication error', json);
+            self.table_element.classList.remove('loading');
+        }
+    });
+}
+
+ruigehond014_selector.prototype.select_href = function (subject) {
     const href = window.location.href.split('#')[0];
     const parts = href.split('?');
     if (parts.length > 1) {
         const params = parts[1].split('&');
         const len = params.length;
         for (let i = len - 1; i >= 0; i--) {
-            if (0 === params[i].indexOf('compare-table-column-' + this.column_index)) {
+            if (0 === params[i].indexOf(`compare-table-column-${this.column_index}`)) {
                 delete params[i];
             }
         }
-        params.push('compare-table-column-' + this.column_index + '=' + encodeURIComponent(subject));
+        params.push(`compare-table-column-${this.column_index}=` + encodeURIComponent(subject));
         parts[1] = Object.values(params).join('&');
         //parts[1] = params.filter(function(item) { return undefined !== item; }).join('&');
     } else {
-        parts.push('compare-table-column-' + this.column_index + '=' + encodeURIComponent(subject));
-    }
-    if (this.hasOwnProperty('table_element')) {
-        this.table_element.classList.add('loading');
+        parts.push(`compare-table-column-${this.column_index}=` + encodeURIComponent(subject));
     }
     // keep scroll position please
     localStorage.setItem('ruigehond014_scrollY', window.scrollY.toString());
-    window.location.href = parts.join('?');// + '#'+ this.table_element.id;
+    window.location.href = parts.join('?');
 }
 
 /* only after everything is locked and loaded we’re initialising */
